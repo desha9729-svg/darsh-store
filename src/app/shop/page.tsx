@@ -1,26 +1,68 @@
 "use client";
 
 import React, { useState, useMemo, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { PRODUCTS, CATEGORIES } from "@/data/mock-products";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { useLanguage } from "@/context/language-context";
 import { Filter, SlidersHorizontal, X, RotateCcw } from "lucide-react";
 
-function ShopContent() {
+function ShopContent({
+  serverCategory,
+  serverGender,
+  serverQuery,
+}: {
+  serverCategory?: string;
+  serverGender?: string;
+  serverQuery?: string;
+}) {
   const searchParams = useSearchParams();
-  const initialCategory = searchParams.get("category") || "all";
-  const initialGender = searchParams.get("gender") || "all";
-  const initialQuery = searchParams.get("q") || "";
-
+  const router = useRouter();
   const { language, t } = useLanguage();
 
-  const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
-  const [selectedGender, setSelectedGender] = useState<string>(initialGender);
-  const [searchQuery, setSearchQuery] = useState<string>(initialQuery);
+  // Combine URL searchParams with server-provided params for seamless SSR + Client navigation
+  const selectedCategory = searchParams.get("category") ?? serverCategory ?? "all";
+  const selectedGender = searchParams.get("gender") ?? serverGender ?? "all";
+  const searchQuery = searchParams.get("q") ?? serverQuery ?? "";
+
   const [sortBy, setSortBy] = useState<"featured" | "newest" | "price-asc" | "price-desc">("featured");
   const [inStockOnly, setInStockOnly] = useState<boolean>(false);
   const [mobileFilterOpen, setMobileFilterOpen] = useState<boolean>(false);
+
+  const updateCategory = (slug: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (slug === "all") {
+      params.delete("category");
+    } else {
+      params.set("category", slug);
+    }
+    const queryStr = params.toString();
+    router.push(queryStr ? `/shop?${queryStr}` : "/shop");
+  };
+
+  const updateGender = (gender: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (gender === "all") {
+      params.delete("gender");
+    } else {
+      params.set("gender", gender);
+    }
+    const queryStr = params.toString();
+    router.push(queryStr ? `/shop?${queryStr}` : "/shop");
+  };
+
+  const clearSearch = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("q");
+    const queryStr = params.toString();
+    router.push(queryStr ? `/shop?${queryStr}` : "/shop");
+  };
+
+  const resetFilters = () => {
+    setInStockOnly(false);
+    setSortBy("featured");
+    router.push("/shop");
+  };
 
   const getCategoryName = (cat: typeof CATEGORIES[0]) => {
     if (language === "ar") {
@@ -37,17 +79,20 @@ function ShopContent() {
     return cat.name;
   };
 
-  // Filter & Sort Logic
+  // Instant reactive filtering
   const filteredProducts = useMemo(() => {
     return PRODUCTS.filter((product) => {
+      // 1. Category Filter
       if (selectedCategory !== "all" && product.categorySlug !== selectedCategory) {
         return false;
       }
+      // 2. Gender Filter
       if (selectedGender !== "all") {
         if (product.gender !== selectedGender && product.gender !== "unisex") {
           return false;
         }
       }
+      // 3. Search Query Filter
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchesName = product.name.toLowerCase().includes(q);
@@ -55,6 +100,7 @@ function ShopContent() {
         const matchesDesc = product.description.toLowerCase().includes(q);
         if (!matchesName && !matchesCat && !matchesDesc) return false;
       }
+      // 4. In Stock Filter
       if (inStockOnly) {
         const stock = product.variants.reduce((acc, v) => acc + v.stockQuantity, 0);
         if (stock <= 0) return false;
@@ -67,14 +113,6 @@ function ShopContent() {
       return 0;
     });
   }, [selectedCategory, selectedGender, searchQuery, inStockOnly, sortBy]);
-
-  const resetFilters = () => {
-    setSelectedCategory("all");
-    setSelectedGender("all");
-    setSearchQuery("");
-    setInStockOnly(false);
-    setSortBy("featured");
-  };
 
   const currentCategoryObj = CATEGORIES.find((c) => c.slug === selectedCategory);
 
@@ -104,7 +142,7 @@ function ShopContent() {
             ].map((g) => (
               <button
                 key={g.id}
-                onClick={() => setSelectedGender(g.id)}
+                onClick={() => updateGender(g.id)}
                 className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-xs transition-colors ${
                   selectedGender === g.id
                     ? "bg-[#0B0B0B] text-white"
@@ -129,10 +167,21 @@ function ShopContent() {
               <span>{language === "ar" ? "الفلاتر" : "Filters"}</span>
             </button>
 
+            {/* Active search filter tag */}
             {searchQuery && (
               <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-neutral-200 text-xs font-medium rounded-full">
                 {language === "ar" ? `بحث: "${searchQuery}"` : `Searching: "${searchQuery}"`}
-                <button onClick={() => setSearchQuery("")} className="hover:text-red-600">
+                <button onClick={clearSearch} className="hover:text-red-600">
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+
+            {/* Active category filter tag */}
+            {selectedCategory !== "all" && currentCategoryObj && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#D9C9B3]/30 border border-[#D9C9B3] text-xs font-bold rounded-full text-black">
+                {getCategoryName(currentCategoryObj)}
+                <button onClick={() => updateCategory("all")} className="hover:text-red-600">
                   <X className="w-3 h-3" />
                 </button>
               </span>
@@ -176,9 +225,9 @@ function ShopContent() {
             </h3>
             <div className="space-y-2 text-sm">
               <button
-                onClick={() => setSelectedCategory("all")}
+                onClick={() => updateCategory("all")}
                 className={`block w-full text-left rtl:text-right transition-colors ${
-                  selectedCategory === "all" ? "font-bold text-[#0B0B0B]" : "text-[#686B6B] hover:text-[#0B0B0B]"
+                  selectedCategory === "all" ? "font-bold text-[#0B0B0B] underline underline-offset-4" : "text-[#686B6B] hover:text-[#0B0B0B]"
                 }`}
               >
                 {language === "ar" ? `كل المنتجات (${PRODUCTS.length})` : `All Products (${PRODUCTS.length})`}
@@ -186,10 +235,10 @@ function ShopContent() {
               {CATEGORIES.map((cat) => (
                 <button
                   key={cat.id}
-                  onClick={() => setSelectedCategory(cat.slug)}
+                  onClick={() => updateCategory(cat.slug)}
                   className={`block w-full text-left rtl:text-right transition-colors ${
                     selectedCategory === cat.slug
-                      ? "font-bold text-[#0B0B0B]"
+                      ? "font-bold text-[#0B0B0B] underline underline-offset-4"
                       : "text-[#686B6B] hover:text-[#0B0B0B]"
                   }`}
                 >
@@ -275,16 +324,16 @@ function ShopContent() {
                 </h4>
                 <div className="space-y-2">
                   <button
-                    onClick={() => { setSelectedCategory("all"); setMobileFilterOpen(false); }}
-                    className={`block w-full text-left rtl:text-right text-sm ${selectedCategory === "all" ? "font-bold text-black" : "text-neutral-600"}`}
+                    onClick={() => { updateCategory("all"); setMobileFilterOpen(false); }}
+                    className={`block w-full text-left rtl:text-right text-sm ${selectedCategory === "all" ? "font-bold text-black underline" : "text-neutral-600"}`}
                   >
                     {language === "ar" ? "كل الأقسام" : "All Categories"}
                   </button>
                   {CATEGORIES.map((c) => (
                     <button
                       key={c.id}
-                      onClick={() => { setSelectedCategory(c.slug); setMobileFilterOpen(false); }}
-                      className={`block w-full text-left rtl:text-right text-sm ${selectedCategory === c.slug ? "font-bold text-black" : "text-neutral-600"}`}
+                      onClick={() => { updateCategory(c.slug); setMobileFilterOpen(false); }}
+                      className={`block w-full text-left rtl:text-right text-sm ${selectedCategory === c.slug ? "font-bold text-black underline" : "text-neutral-600"}`}
                     >
                       {getCategoryName(c)}
                     </button>
@@ -320,7 +369,7 @@ function ShopContent() {
 
 export default function ShopPage() {
   return (
-    <Suspense fallback={<div className="max-w-7xl mx-auto px-4 py-20 text-center">Loading...</div>}>
+    <Suspense fallback={<div className="max-w-7xl mx-auto px-4 py-20 text-center">Loading collection...</div>}>
       <ShopContent />
     </Suspense>
   );

@@ -1,22 +1,71 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useCart } from "@/context/cart-context";
 import { useLanguage } from "@/context/language-context";
-import { Search, ShoppingBag, Menu, X, ArrowRight, ShieldCheck, Globe } from "lucide-react";
+import { CATEGORIES } from "@/data/mock-products";
+import {
+  Search,
+  ShoppingBag,
+  Menu,
+  X,
+  ArrowRight,
+  ShieldCheck,
+  Globe,
+  ChevronDown,
+} from "lucide-react";
 
-export function Header() {
-  const { itemCount, setIsCartOpen } = useCart();
+function HeaderNav() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { language, toggleLanguage, t, isRTL } = useLanguage();
+  const { itemCount, setIsCartOpen } = useCart();
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const activeCategory = searchParams.get("category");
+  const activeGender = searchParams.get("gender");
+
+  const isAllActive = pathname === "/shop" && !activeCategory && !activeGender;
+  const isWatchesActive = pathname === "/shop" && activeCategory === "watches";
+  const isBagsActive = pathname === "/shop" && activeCategory === "bags";
+  const isJewelryActive = pathname === "/shop" && activeCategory === "jewelry";
+  const isEyewearActive = pathname === "/shop" && activeCategory === "eyewear";
+  const isMenActive = pathname === "/shop" && activeGender === "men";
+  const isWomenActive = pathname === "/shop" && activeGender === "women";
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       window.location.href = `/shop?q=${encodeURIComponent(searchQuery.trim())}`;
+    }
+  };
+
+  const getCategoryTitle = (slug: string) => {
+    if (language === "ar") {
+      switch (slug) {
+        case "watches": return "ساعات";
+        case "bags": return "حقائب وجلود";
+        case "jewelry": return "مجوهرات وخواتم";
+        case "eyewear": return "نظارات";
+        case "wallets": return "محافظ";
+        case "perfumes": return "عطور";
+        default: return slug;
+      }
+    }
+    switch (slug) {
+      case "watches": return "Watches";
+      case "bags": return "Bags & Leather";
+      case "jewelry": return "Jewelry & Rings";
+      case "eyewear": return "Eyewear";
+      case "wallets": return "Wallets";
+      case "perfumes": return "Fragrances";
+      default: return slug;
     }
   };
 
@@ -73,26 +122,122 @@ export function Header() {
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-6 xl:gap-8 text-sm font-medium tracking-wide">
-            <Link href="/shop" className="text-[#0B0B0B] hover:text-[#686B6B] transition-colors">
-              {t("nav.allProducts")}
-            </Link>
-            <Link href="/shop?category=watches" className="text-[#0B0B0B] hover:text-[#686B6B] transition-colors">
+          <nav className="hidden lg:flex items-center gap-5 xl:gap-7 text-sm font-medium tracking-wide">
+            
+            {/* Shop All with Dropdown */}
+            <div
+              className="relative py-2"
+              onMouseEnter={() => setDropdownOpen(true)}
+              onMouseLeave={() => setDropdownOpen(false)}
+            >
+              <Link
+                href="/shop"
+                className={`relative py-1.5 flex items-center gap-1 transition-colors ${
+                  isAllActive
+                    ? "text-[#0B0B0B] font-bold after:content-[''] after:absolute after:bottom-0 after:inset-x-0 after:h-0.5 after:bg-[#0B0B0B]"
+                    : "text-[#0B0B0B] hover:text-[#686B6B]"
+                }`}
+              >
+                <span>{t("nav.allProducts")}</span>
+                <ChevronDown className="w-3.5 h-3.5 text-[#686B6B]" />
+              </Link>
+
+              {/* Mega Dropdown Menu */}
+              {dropdownOpen && (
+                <div className="absolute top-full -left-4 rtl:-left-auto rtl:-right-4 w-72 bg-white border border-neutral-200 rounded-sm shadow-xl p-3 z-50 animate-in fade-in-50 zoom-in-95 duration-150">
+                  <div className="p-2 border-b border-neutral-100 text-[11px] font-bold uppercase tracking-wider text-[#686B6B]">
+                    {language === "ar" ? "تصفح حسب القسم" : "Browse by Category"}
+                  </div>
+                  <div className="py-2 space-y-1">
+                    {CATEGORIES.map((cat) => (
+                      <Link
+                        key={cat.id}
+                        href={`/shop?category=${cat.slug}`}
+                        onClick={() => setDropdownOpen(false)}
+                        className={`flex items-center justify-between p-2 rounded-xs text-xs font-semibold hover:bg-neutral-50 hover:text-black transition-colors ${
+                          activeCategory === cat.slug
+                            ? "bg-[#D9C9B3]/25 text-black font-bold"
+                            : "text-[#0B0B0B]"
+                        }`}
+                      >
+                        <span>{getCategoryTitle(cat.slug)}</span>
+                        <span className="text-[10px] text-neutral-400 font-normal">
+                          {cat.itemCount}
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Direct Category Links */}
+            <Link
+              href="/shop?category=watches"
+              className={`relative py-1.5 transition-colors ${
+                isWatchesActive
+                  ? "text-[#0B0B0B] font-bold after:content-[''] after:absolute after:bottom-0 after:inset-x-0 after:h-0.5 after:bg-[#0B0B0B]"
+                  : "text-[#0B0B0B] hover:text-[#686B6B]"
+              }`}
+            >
               {t("nav.watches")}
             </Link>
-            <Link href="/shop?category=bags" className="text-[#0B0B0B] hover:text-[#686B6B] transition-colors">
+
+            <Link
+              href="/shop?category=bags"
+              className={`relative py-1.5 transition-colors ${
+                isBagsActive
+                  ? "text-[#0B0B0B] font-bold after:content-[''] after:absolute after:bottom-0 after:inset-x-0 after:h-0.5 after:bg-[#0B0B0B]"
+                  : "text-[#0B0B0B] hover:text-[#686B6B]"
+              }`}
+            >
               {t("nav.bags")}
             </Link>
-            <Link href="/shop?category=jewelry" className="text-[#0B0B0B] hover:text-[#686B6B] transition-colors">
+
+            <Link
+              href="/shop?category=jewelry"
+              className={`relative py-1.5 transition-colors ${
+                isJewelryActive
+                  ? "text-[#0B0B0B] font-bold after:content-[''] after:absolute after:bottom-0 after:inset-x-0 after:h-0.5 after:bg-[#0B0B0B]"
+                  : "text-[#0B0B0B] hover:text-[#686B6B]"
+              }`}
+            >
               {t("nav.jewelry")}
             </Link>
-            <Link href="/shop?category=eyewear" className="text-[#0B0B0B] hover:text-[#686B6B] transition-colors">
+
+            <Link
+              href="/shop?category=eyewear"
+              className={`relative py-1.5 transition-colors ${
+                isEyewearActive
+                  ? "text-[#0B0B0B] font-bold after:content-[''] after:absolute after:bottom-0 after:inset-x-0 after:h-0.5 after:bg-[#0B0B0B]"
+                  : "text-[#0B0B0B] hover:text-[#686B6B]"
+              }`}
+            >
               {t("nav.eyewear")}
             </Link>
-            <Link href="/shop?gender=men" className="text-[#686B6B] hover:text-[#0B0B0B] transition-colors">
+
+            {/* Gender links */}
+            <div className="h-4 w-px bg-neutral-300 mx-1" />
+
+            <Link
+              href="/shop?gender=men"
+              className={`relative py-1.5 transition-colors ${
+                isMenActive
+                  ? "text-[#0B0B0B] font-bold after:content-[''] after:absolute after:bottom-0 after:inset-x-0 after:h-0.5 after:bg-[#0B0B0B]"
+                  : "text-[#686B6B] hover:text-[#0B0B0B]"
+              }`}
+            >
               {t("nav.men")}
             </Link>
-            <Link href="/shop?gender=women" className="text-[#686B6B] hover:text-[#0B0B0B] transition-colors">
+
+            <Link
+              href="/shop?gender=women"
+              className={`relative py-1.5 transition-colors ${
+                isWomenActive
+                  ? "text-[#0B0B0B] font-bold after:content-[''] after:absolute after:bottom-0 after:inset-x-0 after:h-0.5 after:bg-[#0B0B0B]"
+                  : "text-[#686B6B] hover:text-[#0B0B0B]"
+              }`}
+            >
               {t("nav.women")}
             </Link>
           </nav>
@@ -150,7 +295,7 @@ export function Header() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   autoFocus
-                  className="w-full bg-[#F5F5F3] border border-neutral-300 rounded-sm py-3 px-4 px-10 text-sm text-[#0B0B0B] placeholder-neutral-500 focus:outline-none focus:border-[#0B0B0B] transition-colors"
+                  className="w-full bg-[#F5F5F3] border border-neutral-300 rounded-sm py-3 px-10 text-sm text-[#0B0B0B] placeholder-neutral-500 focus:outline-none focus:border-[#0B0B0B] transition-colors"
                 />
                 <Search className={`absolute ${isRTL ? "right-3" : "left-3"} w-4 h-4 text-neutral-500`} />
                 <button
@@ -226,45 +371,26 @@ export function Header() {
                 <Link
                   href="/shop"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block text-lg font-medium text-[#0B0B0B] hover:text-[#D9C9B3] transition-colors"
+                  className={`block text-lg font-medium transition-colors ${
+                    isAllActive ? "font-bold text-black" : "text-[#0B0B0B] hover:text-[#D9C9B3]"
+                  }`}
                 >
                   {t("nav.allProducts")}
                 </Link>
-                <Link
-                  href="/shop?category=watches"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block text-lg font-medium text-[#0B0B0B] hover:text-[#D9C9B3] transition-colors"
-                >
-                  {t("nav.watches")}
-                </Link>
-                <Link
-                  href="/shop?category=bags"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block text-lg font-medium text-[#0B0B0B] hover:text-[#D9C9B3] transition-colors"
-                >
-                  {t("nav.bags")}
-                </Link>
-                <Link
-                  href="/shop?category=jewelry"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block text-lg font-medium text-[#0B0B0B] hover:text-[#D9C9B3] transition-colors"
-                >
-                  {t("nav.jewelry")}
-                </Link>
-                <Link
-                  href="/shop?category=eyewear"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block text-lg font-medium text-[#0B0B0B] hover:text-[#D9C9B3] transition-colors"
-                >
-                  {t("nav.eyewear")}
-                </Link>
-                <Link
-                  href="/shop?category=wallets"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block text-lg font-medium text-[#0B0B0B] hover:text-[#D9C9B3] transition-colors"
-                >
-                  {t("nav.wallets")}
-                </Link>
+                {CATEGORIES.map((cat) => (
+                  <Link
+                    key={cat.id}
+                    href={`/shop?category=${cat.slug}`}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`block text-lg font-medium transition-colors ${
+                      activeCategory === cat.slug
+                        ? "font-bold text-black"
+                        : "text-[#0B0B0B] hover:text-[#D9C9B3]"
+                    }`}
+                  >
+                    {getCategoryTitle(cat.slug)}
+                  </Link>
+                ))}
               </div>
 
               <div className="pt-4 border-t border-neutral-200 space-y-3">
@@ -301,5 +427,13 @@ export function Header() {
         </div>
       )}
     </>
+  );
+}
+
+export function Header() {
+  return (
+    <Suspense fallback={<div className="h-28 bg-[#F5F5F3]" />}>
+      <HeaderNav />
+    </Suspense>
   );
 }
