@@ -3,6 +3,7 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { useLanguage } from "@/context/language-context";
 import { formatPrice } from "@/lib/utils";
 import {
   Search,
@@ -18,6 +19,7 @@ import {
 function TrackOrderContent() {
   const searchParams = useSearchParams();
   const queryOrder = searchParams.get("order") || "";
+  const { language, t } = useLanguage();
 
   const [orderNumber, setOrderNumber] = useState(queryOrder);
   const [phone, setPhone] = useState("");
@@ -45,7 +47,6 @@ function TrackOrderContent() {
       // fallback
     }
 
-    // Default mock response if not in local storage
     setOrderData({
       orderNumber: num,
       customerName: "Mohamed Ali",
@@ -73,12 +74,36 @@ function TrackOrderContent() {
   };
 
   const steps = [
-    { title: "Order Placed", desc: "تم استلام الطلب", status: "completed" },
-    { title: "Confirmed", desc: "تم تأكيد البيانات وتجهيز الفاتورة", status: "completed" },
-    { title: "Preparing & Packing", desc: "تجهيز وتغليف الإكسسوارات في صندوق DRSH", status: "active" },
-    { title: "With Bosta Courier", desc: "تسليم الشحنة لمندوب شركة بوسطة", status: "pending" },
-    { title: "Out for Delivery", desc: "الشحنة في طريقها لعنوانك اليوم", status: "pending" },
-    { title: "Delivered & Paid COD", desc: "تسليم الطلب ودفع المبلغ نقدًا", status: "pending" },
+    {
+      title: language === "ar" ? "تم تسجيل الطلب" : "Order Placed",
+      desc: language === "ar" ? "تم استلام الطلب وتأكيد البيانات" : "Order received and validated",
+      status: "completed",
+    },
+    {
+      title: language === "ar" ? "تمت المراجعة" : "Confirmed",
+      desc: language === "ar" ? "تم تجهيز فاتورة الشحن" : "Invoice generated and verified",
+      status: "completed",
+    },
+    {
+      title: language === "ar" ? "جارٍ التجهيز والتغليف" : "Preparing & Packing",
+      desc: language === "ar" ? "تجهيز وتغليف الإكسسوارات في صندوق DRSH" : "Carefully boxed in luxury DRSH packaging",
+      status: "active",
+    },
+    {
+      title: language === "ar" ? "تسليم لمندوب بوسطة" : "Handed to Bosta Courier",
+      desc: language === "ar" ? "تسليم الشحنة لمندوب شركة بوسطة" : "Dispatched for express courier pickup",
+      status: "pending",
+    },
+    {
+      title: language === "ar" ? "في الطريق للتسليم" : "Out for Delivery",
+      desc: language === "ar" ? "الشحنة في طريقها لعنوانك اليوم" : "Courier is on the way to your door",
+      status: "pending",
+    },
+    {
+      title: language === "ar" ? "تم التوصيل واستلام المبلغ (COD)" : "Delivered & Paid COD",
+      desc: language === "ar" ? "تسليم الطلب ودفع المبلغ نقدًا بعد المعاينة" : "Cash collected after parcel inspection",
+      status: "pending",
+    },
   ];
 
   return (
@@ -86,13 +111,13 @@ function TrackOrderContent() {
       {/* Title */}
       <div className="text-center max-w-xl mx-auto mb-10">
         <span className="text-xs uppercase font-extrabold tracking-widest text-[#686B6B]">
-          Live Fulfillment Tracker
+          {t("track.eyebrow")}
         </span>
         <h1 className="text-3xl font-extrabold text-[#0B0B0B] uppercase tracking-tight mt-1">
-          Track Your Order
+          {t("track.title")}
         </h1>
         <p className="text-xs text-neutral-500 mt-2">
-          أدخل رقم الطلب ورقم الهاتف للاستعلام اللحظي عن حالة الشحنة وموعد وصول مندوب بوسطة.
+          {t("track.subtitle")}
         </p>
       </div>
 
@@ -107,7 +132,7 @@ function TrackOrderContent() {
         >
           <div className="sm:col-span-6">
             <label className="block text-xs font-bold uppercase tracking-wider text-[#0B0B0B] mb-1.5">
-              Order Number (رقم الطلب) *
+              {t("track.orderNumLabel")}
             </label>
             <input
               type="text"
@@ -121,7 +146,7 @@ function TrackOrderContent() {
 
           <div className="sm:col-span-4">
             <label className="block text-xs font-bold uppercase tracking-wider text-[#0B0B0B] mb-1.5">
-              Mobile Phone (رقم الهاتف)
+              {t("track.phoneLabel")}
             </label>
             <input
               type="tel"
@@ -138,7 +163,7 @@ function TrackOrderContent() {
               className="w-full py-3.5 bg-[#0B0B0B] text-white text-xs font-bold uppercase tracking-wider rounded-sm hover:bg-[#D9C9B3] hover:text-[#0B0B0B] transition-colors flex items-center justify-center gap-1.5"
             >
               <Search className="w-3.5 h-3.5" />
-              <span>Track</span>
+              <span>{t("track.trackBtn")}</span>
             </button>
           </div>
         </form>
@@ -151,13 +176,13 @@ function TrackOrderContent() {
           <div className="p-6 bg-neutral-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <span className="text-[10px] text-[#D9C9B3] font-bold uppercase tracking-widest">
-                Active Order Status
+                {t("track.statusHeader")}
               </span>
               <h3 className="text-xl font-mono font-bold">{orderData.orderNumber}</h3>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-xs bg-amber-500/20 text-amber-300 px-3 py-1 rounded-xs font-bold border border-amber-500/40">
-                In Preparation & Packaging
+                {language === "ar" ? "جارٍ التجهيز والتغليف" : "In Preparation & Packing"}
               </span>
             </div>
           </div>
@@ -206,7 +231,7 @@ function TrackOrderContent() {
             <div className="flex items-center gap-3">
               <Truck className="w-5 h-5 text-[#0B0B0B]" />
               <div>
-                <span className="font-bold text-black block">Fulfillment Partner: Bosta Express</span>
+                <span className="font-bold text-black block">{t("track.bostaPartner")}</span>
                 <span className="text-neutral-500 font-mono">
                   Waybill: {orderData.bostaTrackingNumber}
                 </span>
@@ -219,7 +244,7 @@ function TrackOrderContent() {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-neutral-300 rounded-sm font-bold text-black hover:border-black transition-colors"
             >
-              <span>View On Bosta Live Portal</span>
+              <span>{t("track.bostaPortalBtn")}</span>
               <ExternalLink className="w-3.5 h-3.5" />
             </a>
           </div>

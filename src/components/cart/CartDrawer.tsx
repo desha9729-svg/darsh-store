@@ -4,13 +4,19 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/context/cart-context";
+import { useLanguage } from "@/context/language-context";
 import { formatPrice } from "@/lib/utils";
 import { X, Trash2, Plus, Minus, ShoppingBag, ShieldCheck, ArrowRight } from "lucide-react";
 
 export function CartDrawer() {
   const { items, isCartOpen, setIsCartOpen, removeItem, updateQuantity, subtotal, itemCount } = useCart();
+  const { language, t, isRTL } = useLanguage();
 
   if (!isCartOpen) return null;
+
+  const priceLabel = (val: number) => {
+    return language === "ar" ? `${val} ج.م` : formatPrice(val);
+  };
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden">
@@ -20,7 +26,11 @@ export function CartDrawer() {
         onClick={() => setIsCartOpen(false)}
       />
 
-      <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+      <div
+        className={`fixed inset-y-0 ${
+          isRTL ? "left-0 pr-10" : "right-0 pl-10"
+        } max-w-full flex`}
+      >
         <div className="w-screen max-w-md bg-white shadow-2xl flex flex-col justify-between">
           
           {/* Header */}
@@ -28,7 +38,7 @@ export function CartDrawer() {
             <div className="flex items-center gap-2">
               <ShoppingBag className="w-5 h-5 text-[#0B0B0B]" />
               <h2 className="text-base font-bold uppercase tracking-wider text-[#0B0B0B]">
-                Your Bag ({itemCount})
+                {t("cart.title")} ({itemCount})
               </h2>
             </div>
             <button
@@ -46,15 +56,15 @@ export function CartDrawer() {
                 <div className="w-16 h-16 bg-neutral-100 text-neutral-400 rounded-full flex items-center justify-center mb-4">
                   <ShoppingBag className="w-8 h-8" />
                 </div>
-                <h3 className="text-base font-bold text-[#0B0B0B]">Your bag is empty</h3>
+                <h3 className="text-base font-bold text-[#0B0B0B]">{t("cart.emptyTitle")}</h3>
                 <p className="text-xs text-neutral-500 mt-1 max-w-xs">
-                  Explore our curated accessories and find pieces that complete your personal style.
+                  {t("cart.emptyDesc")}
                 </p>
                 <button
                   onClick={() => setIsCartOpen(false)}
                   className="mt-6 px-6 py-2.5 bg-[#0B0B0B] text-white text-xs font-bold uppercase tracking-wider rounded-sm hover:bg-[#D9C9B3] hover:text-[#0B0B0B] transition-colors"
                 >
-                  Explore Collection
+                  {t("cart.exploreBtn")}
                 </button>
               </div>
             ) : (
@@ -106,7 +116,7 @@ export function CartDrawer() {
                       </div>
 
                       <span className="text-sm font-bold text-[#0B0B0B]">
-                        {formatPrice(item.price * item.quantity)}
+                        {priceLabel(item.price * item.quantity)}
                       </span>
                     </div>
                   </div>
@@ -120,23 +130,22 @@ export function CartDrawer() {
             <div className="p-6 bg-neutral-50 border-t border-neutral-200 space-y-4">
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between text-neutral-600 text-xs">
-                  <span>Subtotal</span>
-                  <span className="font-semibold text-[#0B0B0B]">{formatPrice(subtotal)}</span>
+                  <span>{t("cart.subtotal")}</span>
+                  <span className="font-semibold text-[#0B0B0B]">{priceLabel(subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-neutral-500 text-xs">
-                  <span>Shipping (Egypt)</span>
-                  <span>Calculated at checkout</span>
+                  <span>{t("cart.shippingNotice")}</span>
                 </div>
                 <div className="pt-2 border-t border-neutral-200 flex justify-between text-base font-bold text-[#0B0B0B]">
-                  <span>Estimated Total</span>
-                  <span>{formatPrice(subtotal)}</span>
+                  <span>{t("cart.total")}</span>
+                  <span>{priceLabel(subtotal)}</span>
                 </div>
               </div>
 
               {/* COD Notice */}
               <div className="flex items-center gap-2 p-2.5 bg-[#D9C9B3]/25 border border-[#D9C9B3]/60 rounded-sm text-xs text-[#0B0B0B]">
                 <ShieldCheck className="w-4 h-4 text-[#0B0B0B] shrink-0" />
-                <span>Cash on Delivery: Pay only when your courier arrives.</span>
+                <span>{t("cart.codNotice")}</span>
               </div>
 
               <Link
@@ -144,8 +153,8 @@ export function CartDrawer() {
                 onClick={() => setIsCartOpen(false)}
                 className="w-full py-3.5 px-4 bg-[#0B0B0B] text-white text-xs font-bold uppercase tracking-wider rounded-sm flex items-center justify-center gap-2 hover:bg-neutral-800 transition-colors shadow-md"
               >
-                <span>Proceed to Checkout</span>
-                <ArrowRight className="w-4 h-4" />
+                <span>{t("cart.checkoutBtn")}</span>
+                <ArrowRight className={`w-4 h-4 ${isRTL ? "rotate-180" : ""}`} />
               </Link>
             </div>
           )}

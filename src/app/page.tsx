@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -5,9 +7,12 @@ import { HeroBanner } from "@/components/home/HeroBanner";
 import { FeaturedCategories } from "@/components/home/FeaturedCategories";
 import { ProductGridSection } from "@/components/home/ProductGridSection";
 import { WhyDrsh } from "@/components/home/WhyDrsh";
+import { useLanguage } from "@/context/language-context";
 import { ArrowRight, Sparkles } from "lucide-react";
 
 export default function HomePage() {
+  const { t, isRTL, language } = useLanguage();
+
   return (
     <div>
       {/* 01: Hero Banner */}
@@ -33,7 +38,7 @@ export default function HomePage() {
               />
               <div className="absolute inset-0 bg-gradient-to-t lg:bg-gradient-to-r from-black/80 via-black/30 to-transparent" />
               <div className="absolute top-6 left-6 bg-[#D9C9B3] text-[#0B0B0B] text-[10px] font-extrabold uppercase tracking-widest px-3 py-1 rounded-xs">
-                Limited Edition Set
+                {t("promoBox.badge")}
               </div>
             </div>
 
@@ -42,19 +47,23 @@ export default function HomePage() {
               <div>
                 <div className="flex items-center gap-2 text-[#D9C9B3] text-xs font-bold uppercase tracking-widest mb-3">
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>Curated Collection</span>
+                  <span>{t("promoBox.category")}</span>
                 </div>
                 <h3 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
-                  The Everyday Essentials Box
+                  {t("promoBox.title")}
                 </h3>
                 <p className="mt-4 text-sm text-neutral-300 leading-relaxed">
-                  طقم متكامل يجمع بين ساعة Obsidian الفاخرة، محفظة الجلد الطبيعي RFID، وخاتم التيتانيوم الهندسي داخل صندوق هدايا فاخر.
+                  {t("promoBox.desc")}
                 </p>
                 <div className="mt-6 flex items-baseline gap-3">
-                  <span className="text-2xl font-black text-[#D9C9B3]">1,599 EGP</span>
-                  <span className="text-sm text-neutral-500 line-through">2,100 EGP</span>
+                  <span className="text-2xl font-black text-[#D9C9B3]">
+                    1,599 {language === "ar" ? "ج.م" : "EGP"}
+                  </span>
+                  <span className="text-sm text-neutral-500 line-through">
+                    2,100 {language === "ar" ? "ج.م" : "EGP"}
+                  </span>
                   <span className="text-xs bg-red-900/80 text-red-200 px-2 py-0.5 rounded-xs font-bold">
-                    Save 501 EGP
+                    {t("promoBox.save")} 501 {language === "ar" ? "ج.م" : "EGP"}
                   </span>
                 </div>
               </div>
@@ -64,8 +73,8 @@ export default function HomePage() {
                   href="/product/drsh-minimalist-everyday-gift-set"
                   className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-[#D9C9B3] text-[#0B0B0B] text-xs font-bold uppercase tracking-widest rounded-sm hover:bg-white transition-all duration-300"
                 >
-                  <span>Order Now (Cash on Delivery)</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <span>{t("promoBox.orderCod")}</span>
+                  <ArrowRight className={`w-4 h-4 ${isRTL ? "rotate-180" : ""}`} />
                 </Link>
               </div>
             </div>

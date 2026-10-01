@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { LanguageProvider } from "@/context/language-context";
 import { CartProvider } from "@/context/cart-context";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -24,7 +25,7 @@ export const metadata: Metadata = {
     description: "Egyptian fashion & everyday lifestyle accessories with Cash on Delivery.",
     url: "https://drsh-store.com",
     siteName: "DRSH",
-    locale: "en_EG",
+    locale: "ar_EG",
     type: "website",
   },
 };
@@ -35,14 +36,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="ar" dir="rtl">
       <body className="min-h-screen flex flex-col bg-[#F5F5F3] text-[#0B0B0B] antialiased">
-        <CartProvider>
-          <Header />
-          <CartDrawer />
-          <main className="flex-grow">{children}</main>
-          <Footer />
-        </CartProvider>
+        <LanguageProvider>
+          <CartProvider>
+            <Header />
+            <CartDrawer />
+            <main className="flex-grow">{children}</main>
+            <Footer />
+          </CartProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

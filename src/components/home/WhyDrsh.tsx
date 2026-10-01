@@ -1,31 +1,32 @@
+"use client";
+
 import React from "react";
 import { CheckCircle2, Shield, Truck, Sparkles } from "lucide-react";
+import { useLanguage } from "@/context/language-context";
 
 export function WhyDrsh() {
+  const { language, t } = useLanguage();
+
   const pillars = [
     {
       icon: Sparkles,
-      titleEn: "Curated Selection",
-      titleAr: "اختيارات متقنة",
-      desc: "Every timepiece, ring, and leather bag is hand-selected with obsessive attention to silhouette, weight, and long-term durability.",
+      title: t("whyDrsh.pillar1Title"),
+      desc: t("whyDrsh.pillar1Desc"),
     },
     {
       icon: Shield,
-      titleEn: "Cash on Delivery",
-      titleAr: "دفع آمن عند الاستلام",
-      desc: "Zero upfront online payment required. Pay in cash directly to your Bosta courier upon receiving your parcel.",
+      title: t("whyDrsh.pillar2Title"),
+      desc: t("whyDrsh.pillar2Desc"),
     },
     {
       icon: Truck,
-      titleEn: "Nationwide Coverage",
-      titleAr: "توصيل سريع لجميع المحافظات",
-      desc: "Fast, tracked shipping covering Greater Cairo, Alexandria, Delta, and Upper Egypt within 24 to 72 hours.",
+      title: t("whyDrsh.pillar3Title"),
+      desc: t("whyDrsh.pillar3Desc"),
     },
     {
       icon: CheckCircle2,
-      titleEn: "Parcel Inspection",
-      titleAr: "حق المعاينة عند الاستلام",
-      desc: "Shop with peace of mind. Inspect your items upon arrival to ensure exact match with product specifications.",
+      title: t("whyDrsh.pillar4Title"),
+      desc: t("whyDrsh.pillar4Desc"),
     },
   ];
 
@@ -39,13 +40,13 @@ export function WhyDrsh() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center max-w-2xl mx-auto mb-16">
           <span className="text-xs uppercase font-extrabold tracking-widest text-[#D9C9B3]">
-            The DRSH Standard
+            {t("whyDrsh.eyebrow")}
           </span>
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mt-2 text-white">
-            Why Shop With DRSH?
+            {t("whyDrsh.title")}
           </h2>
           <p className="mt-4 text-sm text-neutral-400">
-            نحن نؤمن بأن الأناقة تكمن في التفاصيل؛ لذلك صممنا تجربة تسوق مريحة، سريعة، وموثوقة من أول نقرة وحتى باب بيتك.
+            {t("whyDrsh.subtitle")}
           </p>
         </div>
 
@@ -62,12 +63,9 @@ export function WhyDrsh() {
                     <Icon className="w-6 h-6" />
                   </div>
                   <h3 className="text-lg font-bold text-white tracking-wide">
-                    {p.titleEn}
+                    {p.title}
                   </h3>
-                  <h4 className="text-xs text-[#D9C9B3] font-medium mt-0.5 mb-3">
-                    {p.titleAr}
-                  </h4>
-                  <p className="text-xs text-neutral-400 leading-relaxed">
+                  <p className="text-xs text-neutral-400 leading-relaxed mt-2.5">
                     {p.desc}
                   </p>
                 </div>

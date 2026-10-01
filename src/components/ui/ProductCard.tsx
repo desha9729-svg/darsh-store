@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Product } from "@/types/ecommerce";
 import { useCart } from "@/context/cart-context";
+import { useLanguage } from "@/context/language-context";
 import { formatPrice } from "@/lib/utils";
 import { ShoppingBag, Eye, Heart, Check } from "lucide-react";
 
@@ -14,6 +15,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCart();
+  const { language, t } = useLanguage();
   const [isHovered, setIsHovered] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
@@ -42,6 +44,10 @@ export function ProductCard({ product }: ProductCardProps) {
     setIsWishlisted(!isWishlisted);
   };
 
+  const priceLabel = (val: number) => {
+    return language === "ar" ? `${val} ج.م` : formatPrice(val);
+  };
+
   return (
     <div
       className="group relative bg-[#FFFFFF] border border-neutral-200/80 rounded-sm overflow-hidden flex flex-col transition-all duration-300 hover:shadow-lg hover:border-neutral-300"
@@ -67,12 +73,12 @@ export function ProductCard({ product }: ProductCardProps) {
           )}
           {product.isNewArrival && (
             <span className="bg-[#D9C9B3] text-[#0B0B0B] text-[10px] font-bold px-2 py-0.5 rounded-xs tracking-wider uppercase">
-              NEW
+              {t("productCard.newBadge")}
             </span>
           )}
           {totalStock > 0 && totalStock <= 3 && (
             <span className="bg-amber-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-xs tracking-wider uppercase">
-              Only {totalStock} Left
+              {t("productCard.onlyLeft")} {totalStock}
             </span>
           )}
         </div>
@@ -91,7 +97,7 @@ export function ProductCard({ product }: ProductCardProps) {
         {/* Quick View Link overlay */}
         <div className="absolute inset-x-0 bottom-3 px-3 flex justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
           <span className="bg-white/95 text-[#0B0B0B] text-xs font-semibold px-4 py-1.5 rounded-sm shadow-md flex items-center gap-1.5 hover:bg-black hover:text-white transition-colors">
-            <Eye className="w-3.5 h-3.5" /> Quick View
+            <Eye className="w-3.5 h-3.5" /> {t("productCard.quickView")}
           </span>
         </div>
       </Link>
@@ -113,11 +119,11 @@ export function ProductCard({ product }: ProductCardProps) {
           {/* Pricing Row */}
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-base font-bold text-[#0B0B0B]">
-              {formatPrice(product.basePrice)}
+              {priceLabel(product.basePrice)}
             </span>
             {product.compareAtPrice && product.compareAtPrice > product.basePrice && (
               <span className="text-xs text-neutral-400 line-through">
-                {formatPrice(product.compareAtPrice)}
+                {priceLabel(product.compareAtPrice)}
               </span>
             )}
           </div>
@@ -137,11 +143,11 @@ export function ProductCard({ product }: ProductCardProps) {
             >
               {isAdded ? (
                 <>
-                  <Check className="w-3.5 h-3.5" /> Added to Bag
+                  <Check className="w-3.5 h-3.5" /> {t("productCard.addedToBag")}
                 </>
               ) : (
                 <>
-                  <ShoppingBag className="w-3.5 h-3.5" /> Add to Bag
+                  <ShoppingBag className="w-3.5 h-3.5" /> {t("productCard.addToBag")}
                 </>
               )}
             </button>
@@ -150,7 +156,7 @@ export function ProductCard({ product }: ProductCardProps) {
               disabled
               className="w-full py-2.5 px-3 text-xs font-bold uppercase tracking-wider rounded-sm bg-neutral-200 text-neutral-500 cursor-not-allowed"
             >
-              Out of Stock
+              {t("productCard.outOfStock")}
             </button>
           )}
         </div>

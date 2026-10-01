@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { PRODUCTS } from "@/data/mock-products";
 import { useCart } from "@/context/cart-context";
+import { useLanguage } from "@/context/language-context";
 import { formatPrice } from "@/lib/utils";
 import { ProductCard } from "@/components/ui/ProductCard";
 import {
@@ -17,7 +18,7 @@ import {
   ArrowRight,
   Heart,
   ChevronRight,
-  Share2,
+  ChevronLeft,
 } from "lucide-react";
 
 export default function ProductDetailPage() {
@@ -25,6 +26,7 @@ export default function ProductDetailPage() {
   const router = useRouter();
   const slug = params?.slug as string;
   const { addItem } = useCart();
+  const { language, t, isRTL } = useLanguage();
 
   const product = PRODUCTS.find((p) => p.slug === slug) || PRODUCTS[0];
 
@@ -33,6 +35,10 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [isAdded, setIsAdded] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
+
+  const priceLabel = (val: number) => {
+    return language === "ar" ? `${val} ج.م` : formatPrice(val);
+  };
 
   const discountAmount =
     selectedVariant.compareAtPrice && selectedVariant.compareAtPrice > selectedVariant.price
@@ -55,17 +61,18 @@ export default function ProductDetailPage() {
   };
 
   const relatedProducts = PRODUCTS.filter((p) => p.id !== product.id).slice(0, 4);
+  const ChevronIcon = isRTL ? ChevronLeft : ChevronRight;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
       {/* Breadcrumb Navigation */}
-      <nav className="flex items-center space-x-2 text-xs text-[#686B6B] mb-8 uppercase tracking-wider">
-        <Link href="/" className="hover:text-black">Home</Link>
-        <ChevronRight className="w-3.5 h-3.5" />
+      <nav className="flex items-center space-x-2 rtl:space-x-reverse text-xs text-[#686B6B] mb-8 uppercase tracking-wider">
+        <Link href="/" className="hover:text-black">{t("nav.home")}</Link>
+        <ChevronIcon className="w-3.5 h-3.5" />
         <Link href={`/shop?category=${product.categorySlug}`} className="hover:text-black">
           {product.category}
         </Link>
-        <ChevronRight className="w-3.5 h-3.5" />
+        <ChevronIcon className="w-3.5 h-3.5" />
         <span className="text-black font-semibold line-clamp-1">{product.name}</span>
       </nav>
 
@@ -105,7 +112,7 @@ export default function ProductDetailPage() {
             />
             {discountAmount > 0 && (
               <span className="absolute top-4 left-4 bg-[#0B0B0B] text-[#D9C9B3] text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-xs">
-                Save {formatPrice(discountAmount)}
+                {t("productPage.save")} {priceLabel(discountAmount)}
               </span>
             )}
           </div>
@@ -126,11 +133,11 @@ export default function ProductDetailPage() {
             {/* Price Row */}
             <div className="mt-4 flex items-baseline gap-3">
               <span className="text-3xl font-black text-[#0B0B0B]">
-                {formatPrice(selectedVariant.price)}
+                {priceLabel(selectedVariant.price)}
               </span>
               {selectedVariant.compareAtPrice && (
                 <span className="text-base text-neutral-400 line-through">
-                  {formatPrice(selectedVariant.compareAtPrice)}
+                  {priceLabel(selectedVariant.compareAtPrice)}
                 </span>
               )}
             </div>
@@ -140,15 +147,15 @@ export default function ProductDetailPage() {
               {selectedVariant.stockQuantity > 5 ? (
                 <div className="inline-flex items-center gap-1.5 text-xs font-bold text-green-700 bg-green-50 px-2.5 py-1 rounded-xs border border-green-200">
                   <Check className="w-3.5 h-3.5" />
-                  <span>In Stock (متوفر للشحن الفوري)</span>
+                  <span>{t("productPage.inStockNotice")}</span>
                 </div>
               ) : selectedVariant.stockQuantity > 0 ? (
                 <div className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-xs border border-amber-300">
-                  <span>Only {selectedVariant.stockQuantity} Left in Stock (متبقي كمية محدودة)</span>
+                  <span>{t("productPage.lowStockNotice")} ({selectedVariant.stockQuantity})</span>
                 </div>
               ) : (
                 <div className="inline-flex items-center gap-1.5 text-xs font-bold text-red-700 bg-red-50 px-2.5 py-1 rounded-xs border border-red-200">
-                  <span>Out of Stock (نفد من المخزون)</span>
+                  <span>{t("productPage.outOfStockNotice")}</span>
                 </div>
               )}
             </div>
@@ -162,7 +169,7 @@ export default function ProductDetailPage() {
             {product.variants.length > 1 && (
               <div className="mt-6">
                 <label className="block text-xs font-bold uppercase tracking-wider text-[#0B0B0B] mb-2">
-                  Select Style / Color:
+                  {t("productPage.selectStyle")}
                 </label>
                 <div className="flex flex-wrap gap-2.5">
                   {product.variants.map((v) => (
@@ -185,7 +192,7 @@ export default function ProductDetailPage() {
             {/* Quantity Selector */}
             <div className="mt-6">
               <label className="block text-xs font-bold uppercase tracking-wider text-[#0B0B0B] mb-2">
-                Quantity:
+                {t("productPage.quantity")}
               </label>
               <div className="inline-flex items-center border border-neutral-300 rounded-sm bg-white">
                 <button
@@ -219,11 +226,11 @@ export default function ProductDetailPage() {
               >
                 {isAdded ? (
                   <>
-                    <Check className="w-4 h-4" /> Added to Bag
+                    <Check className="w-4 h-4" /> {t("productCard.addedToBag")}
                   </>
                 ) : (
                   <>
-                    <ShoppingBag className="w-4 h-4" /> Add to Bag
+                    <ShoppingBag className="w-4 h-4" /> {t("productPage.addToBag")}
                   </>
                 )}
               </button>
@@ -233,8 +240,8 @@ export default function ProductDetailPage() {
                 disabled={selectedVariant.stockQuantity === 0}
                 className="flex-1 py-4 px-6 bg-[#D9C9B3] text-[#0B0B0B] text-xs font-extrabold uppercase tracking-widest rounded-sm flex items-center justify-center gap-2 hover:bg-[#c5bbb0] transition-colors shadow-sm"
               >
-                <span>Buy Now (Cash on Delivery)</span>
-                <ArrowRight className="w-4 h-4" />
+                <span>{t("productPage.buyNowCod")}</span>
+                <ArrowRight className={`w-4 h-4 ${isRTL ? "rotate-180" : ""}`} />
               </button>
 
               <button
@@ -253,15 +260,15 @@ export default function ProductDetailPage() {
           <div className="mt-10 p-5 bg-white border border-neutral-200 rounded-sm space-y-3">
             <div className="flex items-center gap-3 text-xs text-[#0B0B0B]">
               <ShieldCheck className="w-4 h-4 text-[#D9C9B3] shrink-0" />
-              <span><strong>Cash on Delivery (COD):</strong> الدفع نقدًا عند الاستلام فقط بدون أي بطاقات دفع.</span>
+              <span><strong>Cash on Delivery (COD):</strong> {t("productPage.trustCod")}</span>
             </div>
             <div className="flex items-center gap-3 text-xs text-[#0B0B0B]">
               <Truck className="w-4 h-4 text-[#D9C9B3] shrink-0" />
-              <span><strong>Fast Shipping:</strong> شحن لجميع محافظات مصر خلال 24 - 72 ساعة عبر بوسطة.</span>
+              <span><strong>Fast Shipping:</strong> {t("productPage.trustShipping")}</span>
             </div>
             <div className="flex items-center gap-3 text-xs text-[#0B0B0B]">
               <RotateCcw className="w-4 h-4 text-[#D9C9B3] shrink-0" />
-              <span><strong>Inspection Guarantee:</strong> حق فتح الشحنة ومعاينتها قبل الاستلام مع المندوب.</span>
+              <span><strong>Inspection Guarantee:</strong> {t("productPage.trustInspection")}</span>
             </div>
           </div>
         </div>
@@ -270,23 +277,23 @@ export default function ProductDetailPage() {
       {/* Specifications Table */}
       <div className="mt-20 border-t border-neutral-200 pt-12">
         <h3 className="text-base font-bold uppercase tracking-wider text-[#0B0B0B] mb-6">
-          Product Details & Specifications
+          {t("productPage.specsTitle")}
         </h3>
         <div className="max-w-xl bg-white border border-neutral-200 rounded-sm divide-y divide-neutral-100 text-xs">
           <div className="flex justify-between p-3.5">
-            <span className="text-[#686B6B]">Brand</span>
+            <span className="text-[#686B6B]">{t("productPage.brandLabel")}</span>
             <span className="font-semibold text-[#0B0B0B]">DRSH (درش)</span>
           </div>
           <div className="flex justify-between p-3.5">
-            <span className="text-[#686B6B]">Material</span>
+            <span className="text-[#686B6B]">{t("productPage.materialLabel")}</span>
             <span className="font-semibold text-[#0B0B0B]">{product.material || "High Grade"}</span>
           </div>
           <div className="flex justify-between p-3.5">
-            <span className="text-[#686B6B]">Target</span>
+            <span className="text-[#686B6B]">{t("productPage.targetLabel")}</span>
             <span className="font-semibold text-[#0B0B0B] capitalize">{product.gender}</span>
           </div>
           <div className="flex justify-between p-3.5">
-            <span className="text-[#686B6B]">Active SKU</span>
+            <span className="text-[#686B6B]">{t("productPage.sku")}</span>
             <span className="font-mono font-semibold text-[#0B0B0B]">{selectedVariant.sku}</span>
           </div>
         </div>
@@ -295,7 +302,7 @@ export default function ProductDetailPage() {
       {/* Related Products */}
       <div className="mt-24 border-t border-neutral-200 pt-16">
         <h3 className="text-xl sm:text-2xl font-extrabold uppercase tracking-tight text-[#0B0B0B] mb-8">
-          You May Also Like
+          {t("productPage.relatedTitle")}
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
           {relatedProducts.map((p) => (

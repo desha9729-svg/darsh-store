@@ -4,9 +4,11 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { PRODUCTS } from "@/data/mock-products";
 import { ProductCard } from "@/components/ui/ProductCard";
+import { useLanguage } from "@/context/language-context";
 import { ArrowRight } from "lucide-react";
 
 export function ProductGridSection() {
+  const { t, isRTL } = useLanguage();
   const [activeTab, setActiveTab] = useState<"featured" | "new" | "bestseller">("featured");
 
   const filteredProducts = PRODUCTS.filter((p) => {
@@ -23,10 +25,10 @@ export function ProductGridSection() {
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
           <div>
             <span className="text-xs uppercase font-extrabold tracking-widest text-[#686B6B]">
-              Handcrafted & Selected
+              {t("featured.eyebrow")}
             </span>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0B0B0B] tracking-tight mt-1">
-              Featured Pieces
+              {t("featured.title")}
             </h2>
           </div>
 
@@ -40,7 +42,7 @@ export function ProductGridSection() {
                   : "text-[#686B6B] hover:text-[#0B0B0B]"
               }`}
             >
-              Featured
+              {t("featured.featured")}
             </button>
             <button
               onClick={() => setActiveTab("new")}
@@ -50,7 +52,7 @@ export function ProductGridSection() {
                   : "text-[#686B6B] hover:text-[#0B0B0B]"
               }`}
             >
-              New Arrivals
+              {t("featured.newArrivals")}
             </button>
             <button
               onClick={() => setActiveTab("bestseller")}
@@ -60,7 +62,7 @@ export function ProductGridSection() {
                   : "text-[#686B6B] hover:text-[#0B0B0B]"
               }`}
             >
-              Best Sellers
+              {t("featured.bestSellers")}
             </button>
           </div>
         </div>
@@ -78,8 +80,8 @@ export function ProductGridSection() {
             href="/shop"
             className="inline-flex items-center gap-2 px-8 py-3.5 bg-transparent border border-[#0B0B0B] text-[#0B0B0B] font-bold text-xs uppercase tracking-widest rounded-sm hover:bg-[#0B0B0B] hover:text-white transition-all duration-300"
           >
-            <span>Explore Complete Catalog</span>
-            <ArrowRight className="w-4 h-4" />
+            <span>{t("featured.exploreCatalog")}</span>
+            <ArrowRight className={`w-4 h-4 ${isRTL ? "rotate-180" : ""}`} />
           </Link>
         </div>
       </div>
