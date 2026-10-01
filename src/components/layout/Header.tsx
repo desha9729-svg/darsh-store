@@ -71,25 +71,6 @@ function HeaderNav() {
 
   return (
     <>
-      {/* Top Utility Bar: Trust & COD announcement + Quick Language Switcher */}
-      <div className="bg-[#0B0B0B] text-[#D9C9B3] text-xs py-2 px-4 border-b border-neutral-800">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex-1 flex items-center justify-center gap-2 tracking-wider text-center text-[11px] sm:text-xs">
-            <ShieldCheck className="w-3.5 h-3.5 text-[#D9C9B3] shrink-0" />
-            <span>{t("brand.announcement")}</span>
-          </div>
-
-          {/* Quick Language Toggle Button */}
-          <button
-            onClick={toggleLanguage}
-            className="flex items-center gap-1.5 px-2.5 py-0.5 bg-neutral-900 border border-[#D9C9B3]/40 rounded-sm text-[11px] font-bold text-[#D9C9B3] hover:bg-[#D9C9B3] hover:text-[#0B0B0B] transition-colors shrink-0"
-            title="Switch Language / تغيير اللغة"
-          >
-            <Globe className="w-3 h-3" />
-            <span>{language === "ar" ? "English" : "العربية"}</span>
-          </button>
-        </div>
-      </div>
 
       {/* Main Header */}
       <header className="sticky top-0 z-40 bg-[#F5F5F3]/95 backdrop-blur-md border-b border-neutral-200 transition-all">

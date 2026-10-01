@@ -2,9 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { LanguageProvider } from "@/context/language-context";
 import { CartProvider } from "@/context/cart-context";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
-import { CartDrawer } from "@/components/cart/CartDrawer";
+import { StoreLayout } from "@/components/layout/StoreLayout";
 
 export const metadata: Metadata = {
   title: "DRSH (درش) — More Than Just Accessories | E-Commerce Egypt",
@@ -40,10 +38,7 @@ export default function RootLayout({
       <body className="min-h-screen flex flex-col bg-[#F5F5F3] text-[#0B0B0B] antialiased">
         <LanguageProvider>
           <CartProvider>
-            <Header />
-            <CartDrawer />
-            <main className="flex-grow">{children}</main>
-            <Footer />
+            <StoreLayout>{children}</StoreLayout>
           </CartProvider>
         </LanguageProvider>
       </body>
