@@ -9,6 +9,7 @@ import { useLanguage } from "@/context/language-context";
 import { formatPrice } from "@/lib/utils";
 import { EGYPTIAN_GOVERNORATES, getShippingByGovernorate } from "@/data/egypt-governorates";
 import { createOrderInDatabase } from "@/lib/database-service";
+import { validateCoupon } from "@/lib/coupons-store";
 import { ShieldCheck, Truck, Lock, ArrowLeft, ArrowRight, Tag, CheckCircle2 } from "lucide-react";
 
 export default function CheckoutPage() {
@@ -34,6 +35,7 @@ export default function CheckoutPage() {
   const [couponCode, setCouponCode] = useState("");
   const [discountAmount, setDiscountAmount] = useState(0);
   const [couponApplied, setCouponApplied] = useState(false);
+  const [couponSuccessMsg, setCouponSuccessMsg] = useState("");
   const [couponError, setCouponError] = useState("");
 
   // Order submission
@@ -54,16 +56,27 @@ export default function CheckoutPage() {
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
     setCouponError("");
-    const code = couponCode.trim().toUpperCase();
-    if (code === "WELCOME10" || code === "DRSH10") {
-      const discount = Math.round(subtotal * 0.1);
-      setDiscountAmount(discount);
+    setCouponSuccessMsg("");
+    
+    if (!couponCode.trim()) return;
+
+    const res = validateCoupon(couponCode, subtotal);
+    if (res.valid) {
+      setDiscountAmount(res.discountAmount);
       setCouponApplied(true);
-    } else if (code === "SAVE100") {
-      setDiscountAmount(100);
-      setCouponApplied(true);
+      setCouponSuccessMsg(
+        language === "ar"
+          ? res.message
+          : `Coupon applied! You saved ${res.discountAmount} EGP.`
+      );
     } else {
-      setCouponError(language === "ar" ? "كود الخصم غير صحيح أو منتهي الصلاحية." : "Invalid or expired coupon code.");
+      setCouponError(
+        language === "ar"
+          ? res.message
+          : res.message.includes("الحد الأدنى")
+          ? "Minimum order amount not met."
+          : "Invalid or inactive coupon code."
+      );
     }
   };
 
@@ -453,12 +466,27 @@ export default function CheckoutPage() {
                   </button>
                 </div>
                 {couponApplied && (
-                  <p className="text-xs text-green-700 font-semibold mt-1.5 flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> {t("checkout.couponSuccess")}
-                  </p>
+                  <div className="flex items-center justify-between mt-2 pt-1">
+                    <p className="text-xs text-green-700 font-semibold flex items-center gap-1.5">
+                      <CheckCircle2 className="w-4 h-4 shrink-0" />
+                      <span>{couponSuccessMsg || t("checkout.couponSuccess")}</span>
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCouponApplied(false);
+                        setDiscountAmount(0);
+                        setCouponCode("");
+                        setCouponSuccessMsg("");
+                      }}
+                      className="text-[11px] text-red-600 hover:text-red-800 font-bold underline cursor-pointer"
+                    >
+                      {language === "ar" ? "إلغاء الخصم" : "Remove"}
+                    </button>
+                  </div>
                 )}
                 {couponError && (
-                  <p className="text-xs text-red-600 mt-1.5">{couponError}</p>
+                  <p className="text-xs text-red-600 mt-1.5 font-medium">{couponError}</p>
                 )}
               </form>
 
