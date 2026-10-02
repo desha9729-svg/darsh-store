@@ -253,6 +253,7 @@ CREATE POLICY "Allow management on orders" ON public.orders FOR ALL USING (true)
 CREATE POLICY "Allow management on order_items" ON public.order_items FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow management on addresses" ON public.addresses FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow management on shipping_shipments" ON public.shipping_shipments FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow management on coupons" ON public.coupons FOR ALL USING (true) WITH CHECK (true);
 
 -- ==============================================================================
 -- SEED DATA: OFFICIAL DRSH CATALOG & CATEGORIES

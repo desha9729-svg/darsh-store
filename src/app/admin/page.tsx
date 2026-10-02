@@ -20,6 +20,7 @@ import {
   saveStoredCoupons,
   syncCouponToSupabase,
   deleteCouponFromSupabase,
+  getCouponExpiryInfo,
 } from "@/lib/coupons-store";
 import { Product, Gender } from "@/types/ecommerce";
 import {
@@ -57,6 +58,7 @@ import {
   Percent,
   Gift,
   Power,
+  Calendar,
 } from "lucide-react";
 
 // Preset curated images by category for 1-click photo selection
@@ -262,6 +264,7 @@ export default function AdminDashboardPage() {
     discountValue: number;
     minOrderAmount: number;
     usageLimit?: number | string;
+    expiresAt: string;
     isActive: boolean;
   }>({
     code: "",
@@ -269,6 +272,7 @@ export default function AdminDashboardPage() {
     discountValue: 10,
     minOrderAmount: 0,
     usageLimit: 100,
+    expiresAt: "",
     isActive: true,
   });
   const [isSavingCoupon, setIsSavingCoupon] = useState(false);
@@ -292,6 +296,7 @@ export default function AdminDashboardPage() {
       discountValue: 10,
       minOrderAmount: 0,
       usageLimit: 100,
+      expiresAt: "",
       isActive: true,
     });
     setIsCouponModalOpen(true);
@@ -305,9 +310,19 @@ export default function AdminDashboardPage() {
       discountValue: c.discountValue,
       minOrderAmount: c.minOrderAmount || 0,
       usageLimit: c.usageLimit !== undefined ? c.usageLimit : "",
+      expiresAt: c.expiresAt ? c.expiresAt.slice(0, 16) : "",
       isActive: c.isActive,
     });
     setIsCouponModalOpen(true);
+  };
+
+  const handleSetExpiryPreset = (days: number) => {
+    const d = new Date();
+    d.setDate(d.getDate() + days);
+    d.setHours(23, 59, 0, 0);
+    const tzOffset = d.getTimezoneOffset() * 60000;
+    const localIso = new Date(d.getTime() - tzOffset).toISOString().slice(0, 16);
+    setCouponFormData((prev) => ({ ...prev, expiresAt: localIso }));
   };
 
   const handleGenerateRandomCode = () => {
@@ -335,6 +350,10 @@ export default function AdminDashboardPage() {
         : undefined;
     const finalLimit = parsedLimit && parsedLimit > 0 ? parsedLimit : undefined;
 
+    const finalExpiresAt = couponFormData.expiresAt.trim()
+      ? new Date(couponFormData.expiresAt).toISOString()
+      : undefined;
+
     setIsSavingCoupon(true);
     let updated: Coupon[];
     let targetCoupon: Coupon;
@@ -349,6 +368,7 @@ export default function AdminDashboardPage() {
             discountValue: Number(couponFormData.discountValue),
             minOrderAmount: Number(couponFormData.minOrderAmount || 0),
             usageLimit: finalLimit,
+            expiresAt: finalExpiresAt,
             isActive: couponFormData.isActive,
           };
           return targetCoupon;
@@ -369,6 +389,7 @@ export default function AdminDashboardPage() {
         minOrderAmount: Number(couponFormData.minOrderAmount || 0),
         usageLimit: finalLimit,
         timesUsed: 0,
+        expiresAt: finalExpiresAt,
         isActive: couponFormData.isActive,
       };
       updated = [targetCoupon, ...couponsList];
@@ -1493,6 +1514,7 @@ export default function AdminDashboardPage() {
                       <th className="p-4">قيمة الخصم</th>
                       <th className="p-4">الحد الأدنى لقيمة الطلب</th>
                       <th className="p-4 text-center">مرات الاستخدام / الحد الأقصى</th>
+                      <th className="p-4 text-center">تاريخ الانتهاء والصلاحية</th>
                       <th className="p-4 text-center">الحالة</th>
                       <th className="p-4 text-center">الإجراءات والتحكم</th>
                     </tr>
@@ -1500,7 +1522,7 @@ export default function AdminDashboardPage() {
                   <tbody className="divide-y divide-slate-700/60">
                     {filteredCoupons.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="p-8 text-center text-slate-400">
+                        <td colSpan={8} className="p-8 text-center text-slate-400">
                           <Tag className="w-8 h-8 text-slate-600 mx-auto mb-2" />
                           <p className="font-semibold text-white">لا توجد كوبونات تطابق بحثك</p>
                           <p className="text-xs text-slate-500 mt-1">
@@ -1602,12 +1624,49 @@ export default function AdminDashboardPage() {
                             )}
                           </td>
 
+                          {/* Expiry Date */}
+                          <td className="p-4 text-center">
+                            {(() => {
+                              const expiry = getCouponExpiryInfo(c.expiresAt);
+                              if (expiry.isExpired) {
+                                return (
+                                  <span className="px-2 py-0.5 bg-rose-500/10 text-rose-400 border border-rose-500/30 rounded-xs text-[11px] font-bold inline-flex items-center gap-1">
+                                    <Clock className="w-3 h-3" />
+                                    <span>{expiry.label}</span>
+                                  </span>
+                                );
+                              }
+                              if (c.expiresAt) {
+                                return (
+                                  <span
+                                    className={`px-2 py-0.5 rounded-xs text-[11px] font-semibold border inline-flex items-center gap-1 ${
+                                      expiry.badgeColor === "amber"
+                                        ? "bg-amber-500/10 text-amber-400 border-amber-500/30 font-bold"
+                                        : "bg-slate-900 text-slate-300 border-slate-700"
+                                    }`}
+                                  >
+                                    <Calendar className="w-3 h-3 text-slate-400" />
+                                    <span>{expiry.label}</span>
+                                  </span>
+                                );
+                              }
+                              return (
+                                <span className="text-slate-500 text-[11px]">دائم (بدون انتهاء)</span>
+                              );
+                            })()}
+                          </td>
+
                           {/* Status */}
                           <td className="p-4 text-center">
                             {c.usageLimit && c.usageLimit > 0 && (c.timesUsed || 0) >= c.usageLimit ? (
                               <span className="px-2.5 py-1 bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[10px] font-bold rounded-xs inline-flex items-center gap-1">
                                 <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
                                 <span>استنفد الحد (منتهي)</span>
+                              </span>
+                            ) : c.expiresAt && new Date(c.expiresAt) < new Date() ? (
+                              <span className="px-2.5 py-1 bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[10px] font-bold rounded-xs inline-flex items-center gap-1">
+                                <Clock className="w-3 h-3 text-rose-400" />
+                                <span>منتهي الصلاحية</span>
                               </span>
                             ) : c.isActive ? (
                               <span className="px-2.5 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold rounded-xs inline-flex items-center gap-1">
@@ -2672,6 +2731,90 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here`}
                 </div>
               </div>
 
+              {/* Expiry Time & Duration Control */}
+              <div className="p-3 bg-slate-900 border border-slate-700 rounded-sm space-y-2.5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-200">
+                      مدة الصلاحية وتاريخ الانتهاء (Time Expiry)
+                    </label>
+                    <span className="text-[10px] text-slate-400 block mt-0.5">
+                      حدد مدة سريان الكوبون (يوم، شهر، أو تاريخ محدد)، أو اتركه دائم بدون انتهاء.
+                    </span>
+                  </div>
+
+                  {/* Preset quick buttons */}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={() => handleSetExpiryPreset(1)}
+                      className="px-2 py-0.5 rounded-xs text-[10px] font-bold border bg-slate-800 text-slate-300 border-slate-700 hover:text-white hover:border-amber-400 cursor-pointer"
+                    >
+                      يوم (24 س)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSetExpiryPreset(3)}
+                      className="px-2 py-0.5 rounded-xs text-[10px] font-bold border bg-slate-800 text-slate-300 border-slate-700 hover:text-white hover:border-amber-400 cursor-pointer"
+                    >
+                      3 أيام
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSetExpiryPreset(7)}
+                      className="px-2 py-0.5 rounded-xs text-[10px] font-bold border bg-slate-800 text-slate-300 border-slate-700 hover:text-white hover:border-amber-400 cursor-pointer"
+                    >
+                      أسبوع (7 أيام)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSetExpiryPreset(30)}
+                      className="px-2 py-0.5 rounded-xs text-[10px] font-bold border bg-slate-800 text-slate-300 border-slate-700 hover:text-white hover:border-amber-400 cursor-pointer"
+                    >
+                      شهر (30 يوم)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCouponFormData((prev) => ({ ...prev, expiresAt: "" }))}
+                      className={`px-2 py-0.5 rounded-xs text-[10px] font-bold border transition-colors cursor-pointer ${
+                        !couponFormData.expiresAt
+                          ? "bg-blue-600 text-white border-blue-500"
+                          : "bg-slate-800 text-slate-300 border-slate-700 hover:text-white"
+                      }`}
+                    >
+                      دائم (بدون انتهاء) ∞
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="relative flex-1">
+                    <input
+                      type="datetime-local"
+                      value={couponFormData.expiresAt}
+                      onChange={(e) =>
+                        setCouponFormData({ ...couponFormData, expiresAt: e.target.value })
+                      }
+                      className="w-full bg-slate-950 border border-slate-600 rounded-sm py-2 px-3 text-xs text-white font-mono focus:outline-none focus:border-amber-400"
+                    />
+                  </div>
+                  <span className="text-[11px] text-slate-300 shrink-0 font-medium">
+                    {couponFormData.expiresAt ? (
+                      <span className="text-amber-400 font-bold flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>
+                          {getCouponExpiryInfo(couponFormData.expiresAt).label}
+                        </span>
+                      </span>
+                    ) : (
+                      <span className="text-emerald-400 font-bold">
+                        صالح بشكل دائم (لا ينتهي بالوقت)
+                      </span>
+                    )}
+                  </span>
+                </div>
+              </div>
+
               {/* Active Toggle */}
               <div className="p-3 bg-slate-900 border border-slate-700 rounded-sm flex items-center justify-between">
                 <div>
@@ -2712,8 +2855,11 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here`}
                     ? ` على الطلبات التي تبدأ من ${couponFormData.minOrderAmount} ج.م`
                     : " على أي طلب بدون حد أدنى"}
                   {couponFormData.usageLimit !== "" && Number(couponFormData.usageLimit) > 0
-                    ? ` (متاح لأول ${couponFormData.usageLimit} أوردر فقط).`
-                    : " (بدون حد أقصى للاستخدام)."}
+                    ? ` (متاح لـ ${couponFormData.usageLimit} أوردر فقط)`
+                    : ""}
+                  {couponFormData.expiresAt
+                    ? ` (ينتهي في ${new Date(couponFormData.expiresAt).toLocaleDateString("ar-EG")}).`
+                    : " (بدون تاريخ انتهاء)."}
                 </p>
               </div>
 

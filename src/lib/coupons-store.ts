@@ -120,6 +120,56 @@ export function incrementCouponUsage(code: string): void {
 }
 
 /**
+ * Calculates a friendly expiration status and label in Arabic.
+ */
+export function getCouponExpiryInfo(expiresAt?: string): {
+  isExpired: boolean;
+  label: string;
+  badgeColor: "rose" | "amber" | "emerald" | "slate";
+} {
+  if (!expiresAt) {
+    return {
+      isExpired: false,
+      label: "دائم (بدون تاريخ انتهاء)",
+      badgeColor: "slate",
+    };
+  }
+
+  const expiry = new Date(expiresAt);
+  if (isNaN(expiry.getTime())) {
+    return { isExpired: false, label: "تاريخ غير محدد", badgeColor: "slate" };
+  }
+
+  const now = new Date();
+  const diffMs = expiry.getTime() - now.getTime();
+
+  if (diffMs <= 0) {
+    return {
+      isExpired: true,
+      label: `انتهت الصلاحية (${expiry.toLocaleDateString("ar-EG")})`,
+      badgeColor: "rose",
+    };
+  }
+
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffDays >= 1) {
+    return {
+      isExpired: false,
+      label: `متبقي ${diffDays} يوم (${expiry.toLocaleDateString("ar-EG")})`,
+      badgeColor: diffDays <= 3 ? "amber" : "emerald",
+    };
+  }
+
+  return {
+    isExpired: false,
+    label: `متبقي ${Math.max(1, diffHours)} ساعة`,
+    badgeColor: "amber",
+  };
+}
+
+/**
  * Validates a coupon code against a cart subtotal and calculates discount.
  */
 export function validateCoupon(
@@ -157,12 +207,21 @@ export function validateCoupon(
     };
   }
 
-  if (found.expiresAt && new Date(found.expiresAt) < new Date()) {
-    return {
-      valid: false,
-      discountAmount: 0,
-      message: "عذراً، انتهت صلاحية هذا الكوبون.",
-    };
+  // Check expiration date
+  if (found.expiresAt) {
+    const expiry = new Date(found.expiresAt);
+    if (!isNaN(expiry.getTime()) && expiry < new Date()) {
+      const formattedDate = expiry.toLocaleDateString("ar-EG", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+      return {
+        valid: false,
+        discountAmount: 0,
+        message: `عذراً، انتهت صلاحية هذا الكوبون في ${formattedDate}.`,
+      };
+    }
   }
 
   if (found.minOrderAmount && subtotal < found.minOrderAmount) {
