@@ -85,7 +85,6 @@ export async function fetchProductsFromDatabase(): Promise<Product[] | null> {
         is_featured,
         is_new_arrival,
         is_best_seller,
-        sku,
         categories (
           id,
           name,
@@ -215,7 +214,6 @@ export async function saveProductToDatabase(product: Product): Promise<boolean> 
           gender: product.gender,
           base_price: product.basePrice,
           compare_price: product.compareAtPrice || null,
-          sku: product.sku,
           is_featured: Boolean(product.isFeatured),
           is_new_arrival: Boolean(product.isNewArrival),
           is_best_seller: Boolean(product.isBestSeller),

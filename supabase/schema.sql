@@ -244,15 +244,15 @@ CREATE POLICY "Public images are viewable by everyone" ON public.product_images
 CREATE POLICY "Public coupons check" ON public.coupons
     FOR SELECT USING (is_active = true);
 
--- Orders: Public can insert new orders via Next.js Server Actions
-CREATE POLICY "Public can insert orders" ON public.orders
-    FOR INSERT WITH CHECK (true);
-
-CREATE POLICY "Public can insert order items" ON public.order_items
-    FOR INSERT WITH CHECK (true);
-
-CREATE POLICY "Public can insert addresses" ON public.addresses
-    FOR INSERT WITH CHECK (true);
+-- Management & Store Operations Policies (Allow Add/Edit/Delete from Store Dashboard)
+CREATE POLICY "Allow management on categories" ON public.categories FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow management on products" ON public.products FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow management on product_variants" ON public.product_variants FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow management on product_images" ON public.product_images FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow management on orders" ON public.orders FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow management on order_items" ON public.order_items FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow management on addresses" ON public.addresses FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow management on shipping_shipments" ON public.shipping_shipments FOR ALL USING (true) WITH CHECK (true);
 
 -- ==============================================================================
 -- SEED DATA: OFFICIAL DRSH CATALOG & CATEGORIES
