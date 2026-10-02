@@ -60,8 +60,15 @@ export function generateSupabaseSQL(product: Product): string {
   const name = product.name.replace(/'/g, "''");
   const material = (product.material || "Stainless Steel / Genuine Leather").replace(/'/g, "''");
 
+  const imageSqlInserts = product.images.map((img, idx) => {
+    return `INSERT INTO product_images (product_id, image_url, alt_text, sort_order)
+SELECT id, '${img.replace(/'/g, "''")}', '${name} - زاوية ${idx + 1}', ${idx + 1}
+FROM products WHERE slug = '${product.slug}'
+ON CONFLICT DO NOTHING;`;
+  }).join("\n");
+
   return `
--- إضافة منتج جديد: ${product.name}
+-- 1. إضافة / تحديث بيانات المنتج: ${product.name}
 INSERT INTO products (
   name, slug, description, price, compare_price, 
   category_id, brand, material, gender, sku, 
@@ -85,5 +92,8 @@ ON CONFLICT (slug) DO UPDATE SET
   price = EXCLUDED.price,
   compare_price = EXCLUDED.compare_price,
   stock_quantity = EXCLUDED.stock_quantity;
+
+-- 2. إدراج صور المعرض (${product.images.length} صور - Amazon Style Gallery)
+${imageSqlInserts}
 `.trim();
 }

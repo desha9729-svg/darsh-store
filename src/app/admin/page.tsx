@@ -34,6 +34,12 @@ import {
   ArrowUpDown,
   ShoppingBag,
   Info,
+  UploadCloud,
+  FolderUp,
+  Image as ImageIcon,
+  Star,
+  Link as LinkIcon,
+  Loader2,
 } from "lucide-react";
 
 // Preset curated images by category for 1-click photo selection
@@ -77,7 +83,7 @@ interface ProductFormData {
   sku: string;
   stockQuantity: number;
   material: string;
-  imageUrl: string;
+  images: string[];
   description: string;
   variantTitle: string;
   isFeatured: boolean;
@@ -94,7 +100,7 @@ const DEFAULT_FORM_DATA: ProductFormData = {
   sku: "",
   stockQuantity: 15,
   material: "ستانلس ستيل 316L مقاوم للماء والصدأ",
-  imageUrl: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&q=80&w=800",
+  images: ["https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&q=80&w=800"],
   description: "قطعة مميزة بتصميم درش العصري، مصنعة بأعلى معايير الدقة والخامات المتينة مع ضمان كامل عند الاستلام.",
   variantTitle: "اللون الأسود المطفي الافتراضي",
   isFeatured: true,
@@ -114,6 +120,13 @@ export default function AdminDashboardPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [formData, setFormData] = useState<ProductFormData>(DEFAULT_FORM_DATA);
+
+  // Google Drive & Images State
+  const [driveUrlInput, setDriveUrlInput] = useState("");
+  const [isExtractingDrive, setIsExtractingDrive] = useState(false);
+  const [driveError, setDriveError] = useState<string | null>(null);
+  const [manualImageUrl, setManualImageUrl] = useState("");
+  const [imageTab, setImageTab] = useState<"drive" | "upload" | "url">("drive");
 
   // SQL Export Modal State
   const [sqlModalContent, setSqlModalContent] = useState<string | null>(null);
@@ -230,7 +243,11 @@ export default function AdminDashboardPage() {
     setFormData({
       ...DEFAULT_FORM_DATA,
       sku: generateSKU("watches"),
+      images: ["https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&q=80&w=800"],
     });
+    setDriveUrlInput("");
+    setDriveError(null);
+    setManualImageUrl("");
     setIsModalOpen(true);
   };
 
@@ -248,14 +265,121 @@ export default function AdminDashboardPage() {
       sku: p.sku,
       stockQuantity: mainVar ? mainVar.stockQuantity : 10,
       material: p.material || "",
-      imageUrl: p.images[0] || "",
+      images: p.images && p.images.length > 0 ? p.images : ["https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&q=80&w=800"],
       description: p.description,
       variantTitle: mainVar ? mainVar.title : "الافتراضي",
       isFeatured: Boolean(p.isFeatured),
       isNewArrival: Boolean(p.isNewArrival),
       isBestSeller: Boolean(p.isBestSeller),
     });
+    setDriveUrlInput("");
+    setDriveError(null);
+    setManualImageUrl("");
     setIsModalOpen(true);
+  };
+
+  // Extract images from Google Drive
+  const handleExtractDriveImages = async () => {
+    if (!driveUrlInput.trim()) {
+      setDriveError("يرجى إدخال رابط فولدر أو ملف من Google Drive");
+      return;
+    }
+    setIsExtractingDrive(true);
+    setDriveError(null);
+    try {
+      const res = await fetch("/api/drive-images", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: driveUrlInput.trim() }),
+      });
+      const data = await res.json();
+      if (data.success && Array.isArray(data.images) && data.images.length > 0) {
+        setFormData((prev) => ({
+          ...prev,
+          images: Array.from(new Set([
+            ...prev.images.filter((img) => !img.includes("photo-1524805444758")),
+            ...data.images,
+          ])),
+        }));
+        showToast(`تم استخراج ${data.images.length} صورة من Google Drive بنجاح!`);
+        setDriveUrlInput("");
+      } else {
+        setDriveError(data.message || "تعذر استخراج الصور من الرابط");
+      }
+    } catch (err) {
+      setDriveError("تعذر الاتصال بالخادم لاستخراج الصور");
+    } finally {
+      setIsExtractingDrive(false);
+    }
+  };
+
+  // Handle local file uploads (Base64)
+  const handleLocalFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const fileList = Array.from(files);
+    fileList.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (uploadEvent) => {
+        const result = uploadEvent.target?.result as string;
+        if (result) {
+          setFormData((prev) => ({
+            ...prev,
+            images: [
+              ...prev.images.filter((img) => !img.includes("photo-1524805444758")),
+              result,
+            ],
+          }));
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+    showToast(`تمت إضافة ${fileList.length} صور من جهازك للمعرض!`);
+  };
+
+  // Add manual URL
+  const handleAddManualUrl = () => {
+    if (!manualImageUrl.trim()) return;
+    setFormData((prev) => ({
+      ...prev,
+      images: [...prev.images, manualImageUrl.trim()],
+    }));
+    setManualImageUrl("");
+    showToast("تمت إضافة رابط الصورة للمعرض");
+  };
+
+  // Add preset image
+  const handleAddPreset = (url: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      images: Array.from(new Set([...prev.images, url])),
+    }));
+    showToast("تمت إضافة الصورة المقترحة للمعرض");
+  };
+
+  // Set image as cover
+  const handleSetCoverImage = (index: number) => {
+    if (index === 0) return;
+    setFormData((prev) => {
+      const reordered = [...prev.images];
+      const [chosen] = reordered.splice(index, 1);
+      reordered.unshift(chosen);
+      return { ...prev, images: reordered };
+    });
+    showToast("تم تعيين الصورة كغلاف رئيسي للمنتج");
+  };
+
+  // Remove image
+  const handleRemoveImage = (index: number) => {
+    setFormData((prev) => {
+      const filtered = prev.images.filter((_, i) => i !== index);
+      return {
+        ...prev,
+        images: filtered.length > 0 ? filtered : ["https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&q=80&w=800"],
+      };
+    });
+    showToast("تم حذف الصورة من المعرض");
   };
 
   // Save product form
@@ -290,6 +414,10 @@ export default function AdminDashboardPage() {
       },
     };
 
+    const finalImages = formData.images.length > 0
+      ? formData.images
+      : ["https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&q=80&w=800"];
+
     if (editingProductId) {
       // Update existing
       const existing = products.find((p) => p.id === editingProductId);
@@ -304,7 +432,7 @@ export default function AdminDashboardPage() {
           compareAtPrice: formData.compareAtPrice ? Number(formData.compareAtPrice) : undefined,
           sku: finalSKU,
           material: formData.material,
-          images: [formData.imageUrl, ...(existing.images.slice(1))],
+          images: finalImages,
           description: formData.description,
           isFeatured: formData.isFeatured,
           isNewArrival: formData.isNewArrival,
@@ -312,7 +440,7 @@ export default function AdminDashboardPage() {
           variants: [newVariant],
         };
         updateProduct(updated);
-        showToast(`تم تحديث المنتج "${formData.name}" بنجاح!`);
+        showToast(`تم تحديث المنتج "${formData.name}" ومعرض الصور بنجاح!`);
       }
     } else {
       // Add new
@@ -327,7 +455,7 @@ export default function AdminDashboardPage() {
         compareAtPrice: formData.compareAtPrice ? Number(formData.compareAtPrice) : undefined,
         sku: finalSKU,
         material: formData.material,
-        images: [formData.imageUrl],
+        images: finalImages,
         description: formData.description,
         isFeatured: formData.isFeatured,
         isNewArrival: formData.isNewArrival,
@@ -335,7 +463,7 @@ export default function AdminDashboardPage() {
         variants: [newVariant],
       };
       addProduct(newProd);
-      showToast(`تمت إضافة منتج "${formData.name}" بنجاح إلى المتجر والمخزون!`);
+      showToast(`تمت إضافة منتج "${formData.name}" مع ${finalImages.length} صور إلى المتجر!`);
     }
 
     setIsModalOpen(false);
@@ -1250,57 +1378,247 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
-              {/* Image URL & Instant Preview */}
-              <div>
-                <label className="block text-xs font-bold text-slate-200 mb-1.5">
-                  رابط صورة المنتج (Image URL) <span className="text-amber-400">*</span>
-                </label>
-                <div className="flex gap-3 items-start">
-                  <div className="flex-1 space-y-2">
-                    <input
-                      type="url"
-                      required
-                      placeholder="https://images.unsplash.com/..."
-                      value={formData.imageUrl}
-                      onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                      className="w-full bg-slate-900 border border-slate-600 rounded-sm py-2 px-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 font-mono"
-                    />
+              {/* Product Media Gallery (Amazon Style) */}
+              <div className="p-4 bg-slate-900/90 border border-slate-700 rounded-sm space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <ImageIcon className="w-4 h-4 text-amber-400" />
+                      <h4 className="text-xs font-black text-white uppercase tracking-wider">
+                        معرض صور المنتج (Amazon-Style Gallery)
+                      </h4>
+                      <span className="px-2 py-0.5 bg-amber-500/10 text-amber-400 border border-amber-500/30 text-[10px] font-bold rounded-xs">
+                        {formData.images.length} صور مضافة
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      يمكنك استيراد صور من مجلد Google Drive، أو الرفع من جهازك مباشرة، أو إضافة روابط
+                    </p>
+                  </div>
 
-                    {/* Quick Presets for this category */}
+                  {/* Mode switcher tabs */}
+                  <div className="flex items-center gap-1 bg-slate-800 p-0.5 rounded-sm border border-slate-700">
+                    <button
+                      type="button"
+                      onClick={() => setImageTab("drive")}
+                      className={`px-2.5 py-1 text-[11px] font-bold rounded-xs transition-colors cursor-pointer flex items-center gap-1 ${
+                        imageTab === "drive"
+                          ? "bg-amber-500 text-slate-950 font-black shadow-xs"
+                          : "text-slate-300 hover:text-white"
+                      }`}
+                    >
+                      <Database className="w-3 h-3" />
+                      <span>Google Drive</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setImageTab("upload")}
+                      className={`px-2.5 py-1 text-[11px] font-bold rounded-xs transition-colors cursor-pointer flex items-center gap-1 ${
+                        imageTab === "upload"
+                          ? "bg-amber-500 text-slate-950 font-black shadow-xs"
+                          : "text-slate-300 hover:text-white"
+                      }`}
+                    >
+                      <UploadCloud className="w-3 h-3" />
+                      <span>رفع من جهازك</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setImageTab("url")}
+                      className={`px-2.5 py-1 text-[11px] font-bold rounded-xs transition-colors cursor-pointer flex items-center gap-1 ${
+                        imageTab === "url"
+                          ? "bg-amber-500 text-slate-950 font-black shadow-xs"
+                          : "text-slate-300 hover:text-white"
+                      }`}
+                    >
+                      <LinkIcon className="w-3 h-3" />
+                      <span>رابط مباشر</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Tab 1: Google Drive Importer */}
+                {imageTab === "drive" && (
+                  <div className="space-y-2 bg-slate-950/60 p-3 rounded-sm border border-slate-800">
+                    <label className="block text-[11px] font-bold text-slate-300">
+                      رابط فولدر Google Drive أو روابط الصور:
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="url"
+                        placeholder="https://drive.google.com/drive/folders/... أو روابط ملفات"
+                        value={driveUrlInput}
+                        onChange={(e) => {
+                          setDriveUrlInput(e.target.value);
+                          setDriveError(null);
+                        }}
+                        className="flex-1 bg-slate-900 border border-slate-700 rounded-sm py-2 px-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 font-mono"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleExtractDriveImages}
+                        disabled={isExtractingDrive || !driveUrlInput.trim()}
+                        className="px-4 py-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-slate-950 font-black rounded-sm text-xs flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
+                      >
+                        {isExtractingDrive ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            <span>جارٍ الاستخراج...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-3.5 h-3.5" />
+                            <span>استخراج الصور تلقائياً</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+
+                    {driveError && (
+                      <div className="p-2.5 bg-rose-500/10 border border-rose-500/30 rounded-xs text-[11px] text-rose-300 flex items-start gap-2">
+                        <AlertTriangle className="w-3.5 h-3.5 text-rose-400 shrink-0 mt-0.5" />
+                        <div>
+                          <span>{driveError}</span>
+                          <span className="block text-[10px] text-slate-400 mt-0.5">
+                            تأكد أن الفولدر مفتوح للعامة: من جوجل درايف اضغط Share ➔ اختر General Access: "Anyone with the link can view".
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-1.5 text-[10px] text-slate-400 pt-1">
+                      <Info className="w-3 h-3 text-amber-400" />
+                      <span>
+                        يقوم النظام بتحويل روابط جوجل درايف تلقائياً لصور عالية الدقة سريعة العرض في صفحة المنتج.
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Tab 2: Direct Local Upload */}
+                {imageTab === "upload" && (
+                  <div className="p-4 bg-slate-950/60 rounded-sm border border-dashed border-slate-700 text-center space-y-2">
+                    <input
+                      type="file"
+                      id="product-images-upload"
+                      multiple
+                      accept="image/*"
+                      onChange={handleLocalFileUpload}
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="product-images-upload"
+                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-600 rounded-sm text-xs font-bold transition-all cursor-pointer"
+                    >
+                      <UploadCloud className="w-4 h-4" />
+                      <span>اختر عدة صور من جهازك أو الموبايل دفعة واحدة</span>
+                    </label>
+                    <p className="text-[10px] text-slate-400">
+                      يمكنك تحديد صورة من الأمام، من الجانب، وتفاصيل الخامة (PNG, JPG, WebP)
+                    </p>
+                  </div>
+                )}
+
+                {/* Tab 3: Direct URL & Category Presets */}
+                {imageTab === "url" && (
+                  <div className="space-y-3 bg-slate-950/60 p-3 rounded-sm border border-slate-800">
+                    <div className="flex gap-2">
+                      <input
+                        type="url"
+                        placeholder="https://images.unsplash.com/... أو أي رابط صورة مباشر"
+                        value={manualImageUrl}
+                        onChange={(e) => setManualImageUrl(e.target.value)}
+                        className="flex-1 bg-slate-900 border border-slate-700 rounded-sm py-2 px-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 font-mono"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddManualUrl}
+                        disabled={!manualImageUrl.trim()}
+                        className="px-4 py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-200 font-bold rounded-sm text-xs transition-colors cursor-pointer shrink-0"
+                      >
+                        + إضافة الرابط
+                      </button>
+                    </div>
+
                     {PRESET_IMAGES[formData.categorySlug] && (
                       <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                        <span className="text-[10px] text-slate-400">صور سريعة مقترحة:</span>
+                        <span className="text-[10px] text-slate-400">صور سريعة مقترحة للقسم:</span>
                         {PRESET_IMAGES[formData.categorySlug].map((preset, idx) => (
                           <button
                             key={idx}
                             type="button"
-                            onClick={() => setFormData({ ...formData, imageUrl: preset.url })}
+                            onClick={() => handleAddPreset(preset.url)}
                             className="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] rounded-xs border border-slate-600 transition-colors cursor-pointer"
                           >
-                            {preset.label}
+                            + {preset.label}
                           </button>
                         ))}
                       </div>
                     )}
                   </div>
+                )}
 
-                  {/* Thumbnail Preview */}
-                  <div className="w-16 h-16 bg-slate-900 border border-slate-600 rounded-sm overflow-hidden relative shrink-0">
-                    {formData.imageUrl ? (
-                      <Image
-                        src={formData.imageUrl}
-                        alt="معاينة الصورة"
-                        fill
-                        className="object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLElement).style.display = "none";
-                        }}
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-[10px] text-slate-500">
-                        معاينة
+                {/* The Live Thumbnails Matrix */}
+                <div className="space-y-2 pt-2">
+                  <span className="text-[11px] font-bold text-slate-300 block">
+                    الصور الحالية للمنتج (انقر على ⭐ لجعلها صورة الغلاف الرئيسية):
+                  </span>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                    {formData.images.map((imgUrl, idx) => (
+                      <div
+                        key={idx}
+                        className={`group relative rounded-sm overflow-hidden border transition-all ${
+                          idx === 0
+                            ? "border-amber-500 ring-2 ring-amber-500/40"
+                            : "border-slate-700 hover:border-slate-500"
+                        }`}
+                      >
+                        <div className="aspect-square relative bg-slate-950">
+                          <Image
+                            src={imgUrl}
+                            alt=""
+                            fill
+                            className="object-cover"
+                            unoptimized={imgUrl.startsWith("data:")}
+                          />
+                        </div>
+
+                        {/* Top Badges */}
+                        <div className="absolute top-1.5 right-1.5 left-1.5 flex items-center justify-between">
+                          <span
+                            className={`px-1.5 py-0.5 text-[9px] font-extrabold rounded-xs ${
+                              idx === 0
+                                ? "bg-amber-500 text-slate-950 font-black shadow-xs"
+                                : "bg-black/70 text-slate-200"
+                            }`}
+                          >
+                            {idx === 0 ? "الغلاف الرئيسي" : `#${idx + 1}`}
+                          </span>
+
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveImage(idx)}
+                            className="w-5 h-5 bg-rose-600/90 hover:bg-rose-500 text-white rounded-xs flex items-center justify-center opacity-80 group-hover:opacity-100 transition-all cursor-pointer"
+                            title="حذف هذه الصورة"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+
+                        {/* Bottom action to make cover */}
+                        {idx !== 0 && (
+                          <button
+                            type="button"
+                            onClick={() => handleSetCoverImage(idx)}
+                            className="w-full py-1 bg-slate-900/90 hover:bg-amber-500 hover:text-slate-950 text-slate-300 text-[9px] font-bold text-center border-t border-slate-700 transition-colors cursor-pointer flex items-center justify-center gap-1"
+                          >
+                            <Star className="w-2.5 h-2.5" />
+                            <span>تعيين كغلاف</span>
+                          </button>
+                        )}
                       </div>
-                    )}
+                    ))}
                   </div>
                 </div>
               </div>
