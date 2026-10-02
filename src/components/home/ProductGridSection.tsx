@@ -2,16 +2,17 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { PRODUCTS } from "@/data/mock-products";
+import { useProducts } from "@/context/products-context";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { useLanguage } from "@/context/language-context";
 import { ArrowRight } from "lucide-react";
 
 export function ProductGridSection() {
   const { t, isRTL } = useLanguage();
+  const { products } = useProducts();
   const [activeTab, setActiveTab] = useState<"featured" | "new" | "bestseller">("featured");
 
-  const filteredProducts = PRODUCTS.filter((p) => {
+  const filteredProducts = products.filter((p) => {
     if (activeTab === "new") return p.isNewArrival;
     if (activeTab === "bestseller") return p.isBestSeller;
     return p.isFeatured;

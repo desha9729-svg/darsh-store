@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { LanguageProvider } from "@/context/language-context";
+import { ProductsProvider } from "@/context/products-context";
 import { CartProvider } from "@/context/cart-context";
 import { StoreLayout } from "@/components/layout/StoreLayout";
 
@@ -37,9 +38,11 @@ export default function RootLayout({
     <html lang="ar" dir="rtl">
       <body className="min-h-screen flex flex-col bg-[#F5F5F3] text-[#0B0B0B] antialiased">
         <LanguageProvider>
-          <CartProvider>
-            <StoreLayout>{children}</StoreLayout>
-          </CartProvider>
+          <ProductsProvider>
+            <CartProvider>
+              <StoreLayout>{children}</StoreLayout>
+            </CartProvider>
+          </ProductsProvider>
         </LanguageProvider>
       </body>
     </html>

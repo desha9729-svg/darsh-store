@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { PRODUCTS } from "@/data/mock-products";
+import { useProducts } from "@/context/products-context";
 import { useCart } from "@/context/cart-context";
 import { useLanguage } from "@/context/language-context";
 import { formatPrice } from "@/lib/utils";
@@ -27,26 +28,30 @@ export default function ProductDetailPage() {
   const slug = params?.slug as string;
   const { addItem } = useCart();
   const { language, t, isRTL } = useLanguage();
+  const { products } = useProducts();
 
-  const product = PRODUCTS.find((p) => p.slug === slug) || PRODUCTS[0];
+  const product = products.find((p) => p.slug === slug) || PRODUCTS.find((p) => p.slug === slug) || products[0] || PRODUCTS[0];
 
-  const [selectedVariant, setSelectedVariant] = useState(product.variants[0]);
+  const [selectedVariantId, setSelectedVariantId] = useState<string>(product?.variants?.[0]?.id || "");
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isAdded, setIsAdded] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
+
+  // Sync selected variant
+  const selectedVariant = product.variants.find((v) => v.id === selectedVariantId) || product.variants[0];
 
   const priceLabel = (val: number) => {
     return language === "ar" ? `${val} ج.م` : formatPrice(val);
   };
 
   const discountAmount =
-    selectedVariant.compareAtPrice && selectedVariant.compareAtPrice > selectedVariant.price
+    selectedVariant?.compareAtPrice && selectedVariant.compareAtPrice > selectedVariant.price
       ? selectedVariant.compareAtPrice - selectedVariant.price
       : 0;
 
   const handleAddToCart = () => {
-    if (selectedVariant.stockQuantity > 0) {
+    if (selectedVariant && selectedVariant.stockQuantity > 0) {
       addItem(product, selectedVariant, quantity);
       setIsAdded(true);
       setTimeout(() => setIsAdded(false), 2000);
@@ -54,13 +59,13 @@ export default function ProductDetailPage() {
   };
 
   const handleBuyNow = () => {
-    if (selectedVariant.stockQuantity > 0) {
+    if (selectedVariant && selectedVariant.stockQuantity > 0) {
       addItem(product, selectedVariant, quantity);
       router.push("/checkout");
     }
   };
 
-  const relatedProducts = PRODUCTS.filter((p) => p.id !== product.id).slice(0, 4);
+  const relatedProducts = products.filter((p) => p.id !== product.id).slice(0, 4);
   const ChevronIcon = isRTL ? ChevronLeft : ChevronRight;
 
   return (
@@ -175,9 +180,9 @@ export default function ProductDetailPage() {
                   {product.variants.map((v) => (
                     <button
                       key={v.id}
-                      onClick={() => setSelectedVariant(v)}
+                      onClick={() => setSelectedVariantId(v.id)}
                       className={`px-4 py-2 text-xs font-bold tracking-wider rounded-sm border transition-all ${
-                        selectedVariant.id === v.id
+                        selectedVariant?.id === v.id
                           ? "bg-[#0B0B0B] text-white border-[#0B0B0B]"
                           : "bg-white text-neutral-800 border-neutral-300 hover:border-neutral-500"
                       }`}

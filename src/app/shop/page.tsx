@@ -2,7 +2,8 @@
 
 import React, { useState, useMemo, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { PRODUCTS, CATEGORIES } from "@/data/mock-products";
+import { CATEGORIES } from "@/data/mock-products";
+import { useProducts } from "@/context/products-context";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { useLanguage } from "@/context/language-context";
 import { Filter, SlidersHorizontal, X, RotateCcw } from "lucide-react";
@@ -19,6 +20,7 @@ function ShopContent({
   const searchParams = useSearchParams();
   const router = useRouter();
   const { language, t } = useLanguage();
+  const { products } = useProducts();
 
   // Combine URL searchParams with server-provided params for seamless SSR + Client navigation
   const selectedCategory = searchParams.get("category") ?? serverCategory ?? "all";
@@ -81,7 +83,7 @@ function ShopContent({
 
   // Instant reactive filtering
   const filteredProducts = useMemo(() => {
-    return PRODUCTS.filter((product) => {
+    return products.filter((product) => {
       // 1. Category Filter
       if (selectedCategory !== "all" && product.categorySlug !== selectedCategory) {
         return false;
@@ -230,7 +232,7 @@ function ShopContent({
                   selectedCategory === "all" ? "font-bold text-[#0B0B0B] underline underline-offset-4" : "text-[#686B6B] hover:text-[#0B0B0B]"
                 }`}
               >
-                {language === "ar" ? `كل المنتجات (${PRODUCTS.length})` : `All Products (${PRODUCTS.length})`}
+                {language === "ar" ? `كل المنتجات (${products.length})` : `All Products (${products.length})`}
               </button>
               {CATEGORIES.map((cat) => (
                 <button
