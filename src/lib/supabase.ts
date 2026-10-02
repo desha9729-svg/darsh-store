@@ -1,11 +1,32 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const rawUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim();
+const rawKey = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '').trim();
 
-export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
+function isValidUrl(url: string): boolean {
+  if (!url) return false;
+  try {
+    const parsed = new URL(url);
+    return (parsed.protocol === 'http:' || parsed.protocol === 'https:') && !url.includes('your-project-id');
+  } catch {
+    return false;
+  }
+}
 
-// Safe client instance for both browser and server runtime
-export const supabase = isSupabaseConfigured
-  ? createClient(supabaseUrl, supabaseAnonKey)
-  : null;
+export const isSupabaseConfigured: boolean = Boolean(
+  rawUrl &&
+  rawKey &&
+  isValidUrl(rawUrl)
+);
+
+function getSafeClient(): SupabaseClient | null {
+  if (!isSupabaseConfigured) return null;
+  try {
+    return createClient(rawUrl, rawKey);
+  } catch (err) {
+    console.warn('Safe Supabase Client Catch:', err);
+    return null;
+  }
+}
+
+export const supabase: SupabaseClient | null = getSafeClient();
