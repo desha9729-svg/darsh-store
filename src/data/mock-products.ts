@@ -305,7 +305,7 @@ export const PRODUCTS: Product[] = [
     isBestSeller: false,
     sku: "DRSH-BR-07",
     images: [
-      "https://images.unsplash.com/photo-1611591475870-716447c20ee3?auto=format&fit=crop&q=80&w=800",
+      "https://images.unsplash.com/photo-1611591475887-8d07e60fa236?auto=format&fit=crop&q=80&w=800",
     ],
     variants: [
       {
