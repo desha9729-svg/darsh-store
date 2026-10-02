@@ -8,6 +8,7 @@ import { useCart } from "@/context/cart-context";
 import { useLanguage } from "@/context/language-context";
 import { formatPrice } from "@/lib/utils";
 import { EGYPTIAN_GOVERNORATES, getShippingByGovernorate } from "@/data/egypt-governorates";
+import { createOrderInDatabase } from "@/lib/database-service";
 import { ShieldCheck, Truck, Lock, ArrowLeft, ArrowRight, Tag, CheckCircle2 } from "lucide-react";
 
 export default function CheckoutPage() {
@@ -111,12 +112,39 @@ export default function CheckoutPage() {
       bostaTrackingNumber: `BST-${randomOrderNum}-EGY`,
     };
 
+    // Save to local storage for instant receipt rendering
     try {
       localStorage.setItem(`drsh_order_${orderNumber}`, JSON.stringify(orderRecord));
       localStorage.setItem("drsh_latest_order", orderNumber);
     } catch {
       // storage
     }
+
+    // Save to Supabase PostgreSQL if configured
+    createOrderInDatabase({
+      orderNumber,
+      address: {
+        fullName,
+        phone,
+        secondaryPhone,
+        email,
+        governorate: shippingInfo.nameAr,
+        city,
+        streetAddress,
+        buildingNo,
+        floorNo,
+        apartmentNo,
+        landmark,
+        notes,
+      },
+      items,
+      subtotal,
+      shippingFee: shippingInfo.fee,
+      discount: discountAmount,
+      totalAmount,
+      status: "pending_confirmation",
+      bostaTrackingNumber: `BST-${randomOrderNum}-EGY`,
+    }).catch((err) => console.warn("Supabase order sync:", err));
 
     setTimeout(() => {
       clearCart();
