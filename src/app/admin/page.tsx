@@ -261,12 +261,14 @@ export default function AdminDashboardPage() {
     discountType: DiscountType;
     discountValue: number;
     minOrderAmount: number;
+    usageLimit?: number | string;
     isActive: boolean;
   }>({
     code: "",
     discountType: "percentage",
     discountValue: 10,
     minOrderAmount: 0,
+    usageLimit: 100,
     isActive: true,
   });
   const [isSavingCoupon, setIsSavingCoupon] = useState(false);
@@ -289,6 +291,7 @@ export default function AdminDashboardPage() {
       discountType: "percentage",
       discountValue: 10,
       minOrderAmount: 0,
+      usageLimit: 100,
       isActive: true,
     });
     setIsCouponModalOpen(true);
@@ -301,6 +304,7 @@ export default function AdminDashboardPage() {
       discountType: c.discountType,
       discountValue: c.discountValue,
       minOrderAmount: c.minOrderAmount || 0,
+      usageLimit: c.usageLimit !== undefined ? c.usageLimit : "",
       isActive: c.isActive,
     });
     setIsCouponModalOpen(true);
@@ -325,6 +329,12 @@ export default function AdminDashboardPage() {
       return;
     }
 
+    const parsedLimit =
+      couponFormData.usageLimit !== "" && couponFormData.usageLimit !== undefined
+        ? Number(couponFormData.usageLimit)
+        : undefined;
+    const finalLimit = parsedLimit && parsedLimit > 0 ? parsedLimit : undefined;
+
     setIsSavingCoupon(true);
     let updated: Coupon[];
     let targetCoupon: Coupon;
@@ -338,6 +348,7 @@ export default function AdminDashboardPage() {
             discountType: couponFormData.discountType,
             discountValue: Number(couponFormData.discountValue),
             minOrderAmount: Number(couponFormData.minOrderAmount || 0),
+            usageLimit: finalLimit,
             isActive: couponFormData.isActive,
           };
           return targetCoupon;
@@ -356,6 +367,7 @@ export default function AdminDashboardPage() {
         discountType: couponFormData.discountType,
         discountValue: Number(couponFormData.discountValue),
         minOrderAmount: Number(couponFormData.minOrderAmount || 0),
+        usageLimit: finalLimit,
         timesUsed: 0,
         isActive: couponFormData.isActive,
       };
@@ -1480,7 +1492,7 @@ export default function AdminDashboardPage() {
                       <th className="p-4">نوع الخصم</th>
                       <th className="p-4">قيمة الخصم</th>
                       <th className="p-4">الحد الأدنى لقيمة الطلب</th>
-                      <th className="p-4 text-center">مرات الاستخدام</th>
+                      <th className="p-4 text-center">مرات الاستخدام / الحد الأقصى</th>
                       <th className="p-4 text-center">الحالة</th>
                       <th className="p-4 text-center">الإجراءات والتحكم</th>
                     </tr>
@@ -1553,16 +1565,51 @@ export default function AdminDashboardPage() {
                             )}
                           </td>
 
-                          {/* Times used */}
-                          <td className="p-4 text-center font-bold text-slate-200">
-                            <span className="px-2 py-0.5 bg-slate-900 rounded-xs border border-slate-700">
-                              {c.timesUsed || 0} طلب
-                            </span>
+                          {/* Times used & Usage Limit */}
+                          <td className="p-4 text-center">
+                            {c.usageLimit && c.usageLimit > 0 ? (
+                              <div className="space-y-1.5 min-w-32 max-w-44 mx-auto text-right">
+                                <div className="flex items-center justify-between text-[11px]">
+                                  <span className="font-bold text-white">
+                                    {c.timesUsed || 0} / {c.usageLimit} أوردر
+                                  </span>
+                                  {(c.timesUsed || 0) >= c.usageLimit ? (
+                                    <span className="text-[9px] font-black text-rose-400 bg-rose-500/10 px-1.5 py-0.5 rounded-xs border border-rose-500/20">
+                                      مكتمل 100%
+                                    </span>
+                                  ) : (
+                                    <span className="text-[10px] text-slate-400">
+                                      متبقي {c.usageLimit - (c.timesUsed || 0)}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden border border-slate-700">
+                                  <div
+                                    className={`h-full transition-all ${
+                                      (c.timesUsed || 0) >= c.usageLimit ? "bg-rose-500" : "bg-amber-400"
+                                    }`}
+                                    style={{
+                                      width: `${Math.min(100, Math.round(((c.timesUsed || 0) / c.usageLimit) * 100))}%`,
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-900 border border-slate-700 rounded-xs text-[11px]">
+                                <span className="font-bold text-white">{c.timesUsed || 0} أوردر</span>
+                                <span className="text-slate-500 text-[10px]">(غير محدود ∞)</span>
+                              </div>
+                            )}
                           </td>
 
                           {/* Status */}
                           <td className="p-4 text-center">
-                            {c.isActive ? (
+                            {c.usageLimit && c.usageLimit > 0 && (c.timesUsed || 0) >= c.usageLimit ? (
+                              <span className="px-2.5 py-1 bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[10px] font-bold rounded-xs inline-flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
+                                <span>استنفد الحد (منتهي)</span>
+                              </span>
+                            ) : c.isActive ? (
                               <span className="px-2.5 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold rounded-xs inline-flex items-center gap-1">
                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                                 <span>مفعل ونشط</span>
@@ -2550,6 +2597,81 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here`}
                 </div>
               </div>
 
+              {/* Usage Limit Control */}
+              <div className="p-3 bg-slate-900 border border-slate-700 rounded-sm space-y-2.5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-200">
+                      الحد الأقصى لعدد الطلبات (Usage Limit)
+                    </label>
+                    <span className="text-[10px] text-slate-400 block mt-0.5">
+                      يتوقف الكوبون تلقائياً فور وصول عدد الأوردرات المنفذة لهذا الحد.
+                    </span>
+                  </div>
+
+                  {/* Quick Preset Buttons */}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {[50, 100, 200, 500].map((num) => (
+                      <button
+                        key={num}
+                        type="button"
+                        onClick={() => setCouponFormData({ ...couponFormData, usageLimit: num })}
+                        className={`px-2 py-0.5 rounded-xs text-[10px] font-bold border transition-colors cursor-pointer ${
+                          couponFormData.usageLimit === num
+                            ? "bg-amber-500 text-slate-950 border-amber-400 font-black"
+                            : "bg-slate-800 text-slate-300 border-slate-700 hover:text-white"
+                        }`}
+                      >
+                        {num}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setCouponFormData({ ...couponFormData, usageLimit: "" })}
+                      className={`px-2 py-0.5 rounded-xs text-[10px] font-bold border transition-colors cursor-pointer ${
+                        couponFormData.usageLimit === "" || couponFormData.usageLimit === undefined || couponFormData.usageLimit === 0
+                          ? "bg-blue-600 text-white border-blue-500"
+                          : "bg-slate-800 text-slate-300 border-slate-700 hover:text-white"
+                      }`}
+                    >
+                      غير محدود ∞
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="relative flex-1">
+                    <input
+                      type="number"
+                      min={1}
+                      placeholder="مثال: 100 (أو اتركه فارغاً للاستخدام غير المحدود)"
+                      value={couponFormData.usageLimit !== undefined ? couponFormData.usageLimit : ""}
+                      onChange={(e) =>
+                        setCouponFormData({
+                          ...couponFormData,
+                          usageLimit: e.target.value === "" ? "" : Number(e.target.value),
+                        })
+                      }
+                      className="w-full bg-slate-950 border border-slate-600 rounded-sm py-2 px-3 pl-16 text-xs text-white font-mono font-bold focus:outline-none focus:border-amber-400"
+                    />
+                    <span className="absolute left-3 top-2 text-[11px] font-bold text-slate-400">
+                      أوردر
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-slate-300 shrink-0 font-medium">
+                    {couponFormData.usageLimit !== "" && Number(couponFormData.usageLimit) > 0 ? (
+                      <span className="text-amber-400 font-bold">
+                        صالح لأول {couponFormData.usageLimit} أوردر فقط
+                      </span>
+                    ) : (
+                      <span className="text-emerald-400 font-bold">
+                        مفتوح لعدد غير محدود
+                      </span>
+                    )}
+                  </span>
+                </div>
+              </div>
+
               {/* Active Toggle */}
               <div className="p-3 bg-slate-900 border border-slate-700 rounded-sm flex items-center justify-between">
                 <div>
@@ -2587,8 +2709,11 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here`}
                       : `${couponFormData.discountValue} ج.م`}
                   </b>
                   {couponFormData.minOrderAmount > 0
-                    ? ` على الطلبات التي تبدأ من ${couponFormData.minOrderAmount} ج.م.`
-                    : " على أي طلب بدون حد أدنى."}
+                    ? ` على الطلبات التي تبدأ من ${couponFormData.minOrderAmount} ج.م`
+                    : " على أي طلب بدون حد أدنى"}
+                  {couponFormData.usageLimit !== "" && Number(couponFormData.usageLimit) > 0
+                    ? ` (متاح لأول ${couponFormData.usageLimit} أوردر فقط).`
+                    : " (بدون حد أقصى للاستخدام)."}
                 </p>
               </div>
 

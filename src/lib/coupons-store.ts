@@ -23,6 +23,7 @@ export const DEFAULT_COUPONS: Coupon[] = [
     discountType: "percentage",
     discountValue: 10,
     minOrderAmount: 0,
+    usageLimit: 100,
     timesUsed: 48,
     isActive: true,
   },
@@ -32,6 +33,7 @@ export const DEFAULT_COUPONS: Coupon[] = [
     discountType: "percentage",
     discountValue: 10,
     minOrderAmount: 0,
+    usageLimit: 200,
     timesUsed: 112,
     isActive: true,
   },
@@ -41,6 +43,7 @@ export const DEFAULT_COUPONS: Coupon[] = [
     discountType: "fixed_amount",
     discountValue: 100,
     minOrderAmount: 800,
+    usageLimit: 50,
     timesUsed: 25,
     isActive: true,
   },
@@ -50,6 +53,7 @@ export const DEFAULT_COUPONS: Coupon[] = [
     discountType: "percentage",
     discountValue: 15,
     minOrderAmount: 1200,
+    usageLimit: 100,
     timesUsed: 14,
     isActive: true,
   },
@@ -85,6 +89,37 @@ export function saveStoredCoupons(coupons: Coupon[]): void {
 }
 
 /**
+ * Increments the usage count of a coupon when an order is placed.
+ * If usage reaches usageLimit, it automatically marks the coupon as inactive.
+ */
+export function incrementCouponUsage(code: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    const coupons = getStoredCoupons();
+    const clean = code.trim().toUpperCase();
+    const updated = coupons.map((c) => {
+      if (c.code.toUpperCase() === clean) {
+        const newTimesUsed = (c.timesUsed || 0) + 1;
+        const reachedLimit = Boolean(c.usageLimit && c.usageLimit > 0 && newTimesUsed >= c.usageLimit);
+        const updatedCoupon: Coupon = {
+          ...c,
+          timesUsed: newTimesUsed,
+          isActive: reachedLimit ? false : c.isActive,
+        };
+        if (isSupabaseConfigured) {
+          syncCouponToSupabase(updatedCoupon);
+        }
+        return updatedCoupon;
+      }
+      return c;
+    });
+    saveStoredCoupons(updated);
+  } catch (err) {
+    console.error("Error incrementing coupon usage:", err);
+  }
+}
+
+/**
  * Validates a coupon code against a cart subtotal and calculates discount.
  */
 export function validateCoupon(
@@ -110,6 +145,15 @@ export function validateCoupon(
       valid: false,
       discountAmount: 0,
       message: "عذراً، هذا الكوبون غير نشط حالياً.",
+    };
+  }
+
+  // Check usage limit
+  if (found.usageLimit && found.usageLimit > 0 && found.timesUsed >= found.usageLimit) {
+    return {
+      valid: false,
+      discountAmount: 0,
+      message: `عذراً، هذا الكوبون استنفد الحد الأقصى لمرات الاستخدام المحددة (${found.usageLimit} أوردر) وتم إيقافه.`,
     };
   }
 
@@ -160,6 +204,7 @@ export async function syncCouponToSupabase(coupon: Coupon): Promise<boolean> {
         discount_type: coupon.discountType,
         discount_value: coupon.discountValue,
         min_order_amount: coupon.minOrderAmount,
+        usage_limit: coupon.usageLimit || null,
         times_used: coupon.timesUsed,
         expires_at: coupon.expiresAt || null,
         is_active: coupon.isActive,

@@ -9,7 +9,7 @@ import { useLanguage } from "@/context/language-context";
 import { formatPrice } from "@/lib/utils";
 import { EGYPTIAN_GOVERNORATES, getShippingByGovernorate } from "@/data/egypt-governorates";
 import { createOrderInDatabase } from "@/lib/database-service";
-import { validateCoupon } from "@/lib/coupons-store";
+import { validateCoupon, incrementCouponUsage } from "@/lib/coupons-store";
 import { ShieldCheck, Truck, Lock, ArrowLeft, ArrowRight, Tag, CheckCircle2 } from "lucide-react";
 
 export default function CheckoutPage() {
@@ -158,6 +158,11 @@ export default function CheckoutPage() {
       status: "pending_confirmation",
       bostaTrackingNumber: `BST-${randomOrderNum}-EGY`,
     }).catch((err) => console.warn("Supabase order sync:", err));
+
+    // Increment coupon usage count if applied
+    if (couponApplied && couponCode.trim()) {
+      incrementCouponUsage(couponCode.trim());
+    }
 
     setTimeout(() => {
       clearCart();
