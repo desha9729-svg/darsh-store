@@ -1,7 +1,23 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const rawUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim();
-const rawKey = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '').trim();
+function sanitizeUrl(str: string): string {
+  let clean = (str || '').trim().replace(/^['"]|['"]$/g, '');
+  if (clean.includes('=')) {
+    clean = clean.split('=').pop()?.trim() || clean;
+  }
+  return clean.replace(/^['"]|['"]$/g, '');
+}
+
+function sanitizeKey(str: string): string {
+  let clean = (str || '').trim().replace(/^['"]|['"]$/g, '');
+  if (clean.includes('=')) {
+    clean = clean.split('=').pop()?.trim() || clean;
+  }
+  return clean.replace(/^['"]|['"]$/g, '');
+}
+
+const rawUrl = sanitizeUrl(process.env.NEXT_PUBLIC_SUPABASE_URL || '');
+const rawKey = sanitizeKey(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '');
 
 function isValidUrl(url: string): boolean {
   if (!url) return false;
