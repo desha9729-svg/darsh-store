@@ -100,10 +100,11 @@ export function Footer() {
             <h4 className="text-xs font-bold uppercase tracking-widest text-white mb-4">
               {t("footer.careHeading")}
             </h4>
-            <ul className="space-y-2.5 text-sm text-neutral-400">
+            <ul className="space-y-2.5 text-xs sm:text-sm text-neutral-400">
               <li><Link href="/track-order" className="hover:text-white transition-colors">{t("nav.trackOrder")}</Link></li>
               <li><Link href="/shipping" className="hover:text-white transition-colors">{t("footer.shippingLink")}</Link></li>
               <li><Link href="/returns" className="hover:text-white transition-colors">{t("footer.returnsLink")}</Link></li>
+              <li><Link href="/security" className="text-[#D9C9B3] hover:text-white font-medium transition-colors flex items-center gap-1"><span>🛡️</span><span>{t("footer.securityLink")}</span></Link></li>
               <li><Link href="/contact" className="hover:text-white transition-colors">{t("nav.contact")}</Link></li>
             </ul>
           </div>
@@ -113,8 +114,9 @@ export function Footer() {
             <h4 className="text-xs font-bold uppercase tracking-widest text-white mb-4">
               {t("footer.aboutHeading")}
             </h4>
-            <ul className="space-y-2.5 text-sm text-neutral-400">
+            <ul className="space-y-2.5 text-xs sm:text-sm text-neutral-400">
               <li><Link href="/about" className="hover:text-white transition-colors">{t("nav.about")}</Link></li>
+              <li><Link href="/security" className="hover:text-white transition-colors">{t("footer.securityLink")}</Link></li>
               <li><Link href="/privacy" className="hover:text-white transition-colors">{t("footer.privacyLink")}</Link></li>
               <li><Link href="/terms" className="hover:text-white transition-colors">{t("footer.termsLink")}</Link></li>
               <li><Link href="/admin" className="text-neutral-500 hover:text-neutral-400 text-xs">{t("nav.admin")}</Link></li>
@@ -123,14 +125,16 @@ export function Footer() {
         </div>
 
         {/* Bottom Copyright & Egypt Notice */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-neutral-500 gap-4">
+        <div className="pt-6 sm:pt-8 flex flex-col sm:flex-row items-center justify-between text-[11px] sm:text-xs text-neutral-500 gap-3 sm:gap-4">
           <p>© {new Date().getFullYear()} DRSH (درش) Store. {t("footer.rights")}</p>
-          <div className="flex items-center space-x-4 rtl:space-x-reverse text-neutral-400">
-            <span>{language === "ar" ? "الدفع عند الاستلام (COD)" : "Cash on Delivery (COD)"}</span>
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-neutral-400 text-center">
+            <span>{language === "ar" ? "الدفع نقدًا عند الاستلام (COD)" : "Cash on Delivery (COD)"}</span>
+            <span>•</span>
+            <span>{language === "ar" ? "معاينة مجانية مع المندوب" : "Inspection Upon Delivery"}</span>
             <span>•</span>
             <span>Bosta Logistics</span>
             <span>•</span>
-            <span>{language === "ar" ? "القاهرة / مصر" : "Cairo / Egypt"}</span>
+            <span>{language === "ar" ? "جمهورية مصر العربية" : "Egypt"}</span>
           </div>
         </div>
       </div>

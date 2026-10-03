@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { CATEGORIES } from "@/data/mock-products";
 import { useProducts } from "@/context/products-context";
 import { ProductCard } from "@/components/ui/ProductCard";
+import { TrustGuarantees } from "@/components/ui/TrustGuarantees";
 import { useLanguage } from "@/context/language-context";
 import { Filter, SlidersHorizontal, X, RotateCcw } from "lucide-react";
 
@@ -119,23 +120,23 @@ function ShopContent({
   const currentCategoryObj = CATEGORIES.find((c) => c.slug === selectedCategory);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 md:py-16">
       {/* Page Header */}
-      <div className="border-b border-neutral-200 pb-8 mb-8">
+      <div className="border-b border-neutral-200 pb-6 mb-6 sm:pb-8 sm:mb-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-[#0B0B0B] uppercase tracking-tight">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#0B0B0B] uppercase tracking-tight">
               {selectedCategory === "all"
                 ? (language === "ar" ? "كل الإكسسوارات" : "All Accessories")
                 : (currentCategoryObj ? getCategoryName(currentCategoryObj) : "Collection")}
             </h1>
-            <p className="text-xs text-[#686B6B] mt-1.5 uppercase tracking-wider">
+            <p className="text-[11px] sm:text-xs text-[#686B6B] mt-1 uppercase tracking-wider">
               {filteredProducts.length} {language === "ar" ? "منتج متوفر • شحن ودفع عند الاستلام بجميع المحافظات" : "pieces available • Cash on Delivery nationwide"}
             </p>
           </div>
 
           {/* Quick Gender Toggle */}
-          <div className="flex items-center gap-1.5 p-1 bg-white border border-neutral-300 rounded-sm self-start md:self-auto">
+          <div className="flex items-center gap-1 p-1 bg-white border border-neutral-300 rounded-sm self-start md:self-auto overflow-x-auto max-w-full">
             {[
               { id: "all", label: language === "ar" ? "الكل" : "All" },
               { id: "men", label: language === "ar" ? "رجالي" : "Men" },
@@ -145,7 +146,7 @@ function ShopContent({
               <button
                 key={g.id}
                 onClick={() => updateGender(g.id)}
-                className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-xs transition-colors ${
+                className={`px-2.5 py-1.5 sm:px-3 sm:py-1.5 text-[11px] sm:text-xs font-bold uppercase tracking-wider rounded-xs transition-colors shrink-0 ${
                   selectedGender === g.id
                     ? "bg-[#0B0B0B] text-white"
                     : "text-[#686B6B] hover:text-[#0B0B0B]"
@@ -296,12 +297,17 @@ function ShopContent({
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-4 md:gap-6">
               {filteredProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
           )}
+
+          {/* Buyer Trust Guarantees Bar */}
+          <div className="mt-8 sm:mt-12">
+            <TrustGuarantees variant="horizontal" showLink={true} />
+          </div>
         </main>
       </div>
 

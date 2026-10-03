@@ -74,29 +74,29 @@ function HeaderNav() {
 
       {/* Main Header */}
       <header className="sticky top-0 z-40 bg-[#F5F5F3]/95 backdrop-blur-md border-b border-neutral-200 transition-all">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
           
           {/* Mobile Menu Button */}
           <div className="flex items-center lg:hidden">
             <button
               onClick={() => setMobileMenuOpen(true)}
               aria-label="Open menu"
-              className="p-2 text-[#0B0B0B] hover:text-[#686B6B] transition-colors"
+              className="w-10 h-10 flex items-center justify-center text-[#0B0B0B] hover:text-[#686B6B] transition-colors rounded-sm"
             >
-              <Menu className="w-6 h-6" />
+              <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
           </div>
 
           {/* DRSH Brand Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 bg-[#0B0B0B] text-[#D9C9B3] rounded-sm flex items-center justify-center font-bold text-xl tracking-tighter border border-[#D9C9B3]/40 group-hover:border-[#D9C9B3] transition-colors">
+          <Link href="/" className="flex items-center gap-2 sm:gap-3 group">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[#0B0B0B] text-[#D9C9B3] rounded-sm flex items-center justify-center font-bold text-lg sm:text-xl tracking-tighter border border-[#D9C9B3]/40 group-hover:border-[#D9C9B3] transition-colors">
               <span>D</span>
             </div>
             <div className="flex flex-col">
-              <span className="font-extrabold text-2xl tracking-widest text-[#0B0B0B] leading-none">
+              <span className="font-extrabold text-xl sm:text-2xl tracking-widest text-[#0B0B0B] leading-none">
                 DRSH
               </span>
-              <span className="text-[10px] tracking-widest text-[#686B6B] uppercase font-semibold mt-0.5">
+              <span className="text-[9px] sm:text-[10px] tracking-widest text-[#686B6B] uppercase font-semibold mt-0.5">
                 {t("brand.subTagline")}
               </span>
             </div>
@@ -224,11 +224,22 @@ function HeaderNav() {
           </nav>
 
           {/* Actions: Search, Language Switcher, Track, Cart */}
-          <div className="flex items-center gap-3 sm:gap-5">
+          <div className="flex items-center gap-1.5 sm:gap-4">
+            {/* Quick Mobile Language Switcher (1-tap access on phone) */}
+            <button
+              onClick={toggleLanguage}
+              aria-label="Change Language"
+              className="inline-flex sm:hidden items-center justify-center px-2 py-1 border border-neutral-300 rounded-sm text-[11px] font-bold text-[#0B0B0B] hover:bg-neutral-100 min-h-[36px] transition-colors"
+            >
+              <Globe className="w-3 h-3 mr-1 rtl:mr-0 rtl:ml-1 text-neutral-600" />
+              <span>{language === "ar" ? "EN" : "عربي"}</span>
+            </button>
+
             {/* Desktop Language Switcher */}
             <button
               onClick={toggleLanguage}
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 border border-neutral-300 rounded-sm text-xs font-bold text-[#0B0B0B] hover:border-[#0B0B0B] hover:bg-neutral-100 transition-colors"
+              aria-label="Change Language"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 border border-neutral-300 rounded-sm text-xs font-bold text-[#0B0B0B] hover:border-[#0B0B0B] hover:bg-neutral-100 min-h-[38px] transition-colors"
             >
               <Globe className="w-3.5 h-3.5 text-[#686B6B]" />
               <span>{language === "ar" ? "English" : "عربي"}</span>
@@ -237,14 +248,14 @@ function HeaderNav() {
             <button
               onClick={() => setSearchOpen(!searchOpen)}
               aria-label="Search"
-              className="p-2 text-[#0B0B0B] hover:text-[#686B6B] transition-colors"
+              className="w-10 h-10 flex items-center justify-center text-[#0B0B0B] hover:text-[#686B6B] rounded-sm transition-colors"
             >
               <Search className="w-5 h-5" />
             </button>
 
             <Link
               href="/track-order"
-              className="hidden md:inline-flex text-xs font-semibold uppercase tracking-wider text-[#686B6B] hover:text-[#0B0B0B] border border-neutral-300 px-3 py-1.5 rounded-sm hover:border-[#0B0B0B] transition-colors"
+              className="hidden md:inline-flex items-center text-xs font-semibold uppercase tracking-wider text-[#686B6B] hover:text-[#0B0B0B] border border-neutral-300 px-3 py-1.5 rounded-sm hover:border-[#0B0B0B] min-h-[38px] transition-colors"
             >
               {t("nav.trackOrder")}
             </Link>
@@ -253,11 +264,11 @@ function HeaderNav() {
             <button
               onClick={() => setIsCartOpen(true)}
               aria-label="Open Cart"
-              className="relative p-2 text-[#0B0B0B] hover:text-[#686B6B] transition-colors"
+              className="relative w-10 h-10 flex items-center justify-center text-[#0B0B0B] hover:text-[#686B6B] rounded-sm transition-colors"
             >
-              <ShoppingBag className="w-6 h-6" />
+              <ShoppingBag className="w-5 h-5 sm:w-6 sm:h-6" />
               {itemCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#0B0B0B] text-[#D9C9B3] text-xs font-bold rounded-full flex items-center justify-center border border-[#D9C9B3]/50">
+                <span className="absolute top-0.5 right-0.5 sm:-top-1 sm:-right-1 w-4.5 h-4.5 sm:w-5 sm:h-5 bg-[#0B0B0B] text-[#D9C9B3] text-[10px] sm:text-xs font-bold rounded-full flex items-center justify-center border border-[#D9C9B3]/50">
                   {itemCount}
                 </span>
               )}
@@ -397,10 +408,33 @@ function HeaderNav() {
                 >
                   {t("nav.contact")}
                 </Link>
+                <div className="pt-2 border-t border-neutral-100 flex flex-col space-y-2 text-xs text-[#686B6B]">
+                  <Link
+                    href="/security"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="hover:text-black font-medium"
+                  >
+                    🛡️ {language === "ar" ? "سياسة الأمان وحماية المشتري" : "Buyer Protection & Security"}
+                  </Link>
+                  <Link
+                    href="/shipping"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="hover:text-black"
+                  >
+                    🚚 {language === "ar" ? "الشحن ومواعيد التوصيل" : "Shipping & Delivery"}
+                  </Link>
+                  <Link
+                    href="/returns"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="hover:text-black"
+                  >
+                    🔄 {language === "ar" ? "سياسة الاسترجاع والاستبدال" : "Returns & Exchanges"}
+                  </Link>
+                </div>
               </div>
             </div>
 
-            <div className="pt-6 border-t border-neutral-200 text-xs text-[#686B6B]">
+            <div className="pt-4 border-t border-neutral-200 text-xs text-[#686B6B]">
               <p className="font-semibold text-[#0B0B0B]">{t("hero.codBadge")}</p>
               <p className="mt-1">{t("hero.shippingBadge")}</p>
             </div>

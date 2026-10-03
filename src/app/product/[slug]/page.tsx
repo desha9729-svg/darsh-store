@@ -10,6 +10,7 @@ import { useCart } from "@/context/cart-context";
 import { useLanguage } from "@/context/language-context";
 import { formatPrice } from "@/lib/utils";
 import { ProductCard } from "@/components/ui/ProductCard";
+import { TrustGuarantees } from "@/components/ui/TrustGuarantees";
 import {
   ShieldCheck,
   Truck,
@@ -69,9 +70,9 @@ export default function ProductDetailPage() {
   const ChevronIcon = isRTL ? ChevronLeft : ChevronRight;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-10 md:py-16">
       {/* Breadcrumb Navigation */}
-      <nav className="flex items-center space-x-2 rtl:space-x-reverse text-xs text-[#686B6B] mb-8 uppercase tracking-wider">
+      <nav className="flex items-center space-x-2 rtl:space-x-reverse text-xs text-[#686B6B] mb-6 sm:mb-8 uppercase tracking-wider">
         <Link href="/" className="hover:text-black">{t("nav.home")}</Link>
         <ChevronIcon className="w-3.5 h-3.5" />
         <Link href={`/shop?category=${product.categorySlug}`} className="hover:text-black">
@@ -195,23 +196,25 @@ export default function ProductDetailPage() {
             )}
 
             {/* Quantity Selector */}
-            <div className="mt-6">
+            <div className="mt-5 sm:mt-6">
               <label className="block text-xs font-bold uppercase tracking-wider text-[#0B0B0B] mb-2">
                 {t("productPage.quantity")}
               </label>
               <div className="inline-flex items-center border border-neutral-300 rounded-sm bg-white">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-100"
+                  aria-label="Decrease quantity"
+                  className="w-9 h-9 flex items-center justify-center text-sm font-bold text-neutral-700 hover:bg-neutral-100 transition-colors"
                 >
                   -
                 </button>
-                <span className="px-4 py-2 text-xs font-bold text-black">{quantity}</span>
+                <span className="w-10 text-center text-xs font-bold text-black">{quantity}</span>
                 <button
                   onClick={() =>
                     setQuantity(Math.min(selectedVariant.stockQuantity, quantity + 1))
                   }
-                  className="px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-100"
+                  aria-label="Increase quantity"
+                  className="w-9 h-9 flex items-center justify-center text-sm font-bold text-neutral-700 hover:bg-neutral-100 transition-colors"
                 >
                   +
                 </button>
@@ -219,11 +222,11 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Action Buttons: Add to Bag & Buy Now */}
-            <div className="mt-8 flex flex-col sm:flex-row items-stretch gap-3">
+            <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-stretch gap-3">
               <button
                 onClick={handleAddToCart}
                 disabled={selectedVariant.stockQuantity === 0}
-                className={`flex-1 py-4 px-6 text-xs font-extrabold uppercase tracking-widest rounded-sm flex items-center justify-center gap-2 shadow-md transition-all ${
+                className={`flex-1 py-3.5 sm:py-4 px-4 sm:px-6 min-h-[44px] text-xs font-extrabold uppercase tracking-widest rounded-sm flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.99] ${
                   isAdded
                     ? "bg-green-700 text-white"
                     : "bg-[#0B0B0B] text-white hover:bg-[#D9C9B3] hover:text-[#0B0B0B]"
@@ -243,7 +246,7 @@ export default function ProductDetailPage() {
               <button
                 onClick={handleBuyNow}
                 disabled={selectedVariant.stockQuantity === 0}
-                className="flex-1 py-4 px-6 bg-[#D9C9B3] text-[#0B0B0B] text-xs font-extrabold uppercase tracking-widest rounded-sm flex items-center justify-center gap-2 hover:bg-[#c5bbb0] transition-colors shadow-sm"
+                className="flex-1 py-3.5 sm:py-4 px-4 sm:px-6 min-h-[44px] bg-[#D9C9B3] text-[#0B0B0B] text-xs font-extrabold uppercase tracking-widest rounded-sm flex items-center justify-center gap-2 hover:bg-[#c5bbb0] transition-colors shadow-sm active:scale-[0.99]"
               >
                 <span>{t("productPage.buyNowCod")}</span>
                 <ArrowRight className={`w-4 h-4 ${isRTL ? "rotate-180" : ""}`} />
@@ -252,7 +255,7 @@ export default function ProductDetailPage() {
               <button
                 onClick={() => setIsWishlisted(!isWishlisted)}
                 aria-label="Wishlist"
-                className="px-4 py-4 bg-white border border-neutral-300 rounded-sm hover:border-black flex items-center justify-center transition-colors"
+                className="w-12 sm:w-14 min-h-[44px] bg-white border border-neutral-300 rounded-sm hover:border-black flex items-center justify-center transition-colors self-center sm:self-auto"
               >
                 <Heart
                   className={`w-5 h-5 ${isWishlisted ? "fill-red-600 text-red-600" : "text-neutral-700"}`}
@@ -261,20 +264,9 @@ export default function ProductDetailPage() {
             </div>
           </div>
 
-          {/* Delivery & Trust Assurance Card */}
-          <div className="mt-10 p-5 bg-white border border-neutral-200 rounded-sm space-y-3">
-            <div className="flex items-center gap-3 text-xs text-[#0B0B0B]">
-              <ShieldCheck className="w-4 h-4 text-[#D9C9B3] shrink-0" />
-              <span><strong>Cash on Delivery (COD):</strong> {t("productPage.trustCod")}</span>
-            </div>
-            <div className="flex items-center gap-3 text-xs text-[#0B0B0B]">
-              <Truck className="w-4 h-4 text-[#D9C9B3] shrink-0" />
-              <span><strong>Fast Shipping:</strong> {t("productPage.trustShipping")}</span>
-            </div>
-            <div className="flex items-center gap-3 text-xs text-[#0B0B0B]">
-              <RotateCcw className="w-4 h-4 text-[#D9C9B3] shrink-0" />
-              <span><strong>Inspection Guarantee:</strong> {t("productPage.trustInspection")}</span>
-            </div>
+          {/* Delivery & Trust Assurance Card (Replaced with Global TrustGuarantees) */}
+          <div className="mt-8 sm:mt-10">
+            <TrustGuarantees variant="compact" showLink={true} />
           </div>
         </div>
       </div>
@@ -309,7 +301,7 @@ export default function ProductDetailPage() {
         <h3 className="text-xl sm:text-2xl font-extrabold uppercase tracking-tight text-[#0B0B0B] mb-8">
           {t("productPage.relatedTitle")}
         </h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4 md:gap-6">
           {relatedProducts.map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}

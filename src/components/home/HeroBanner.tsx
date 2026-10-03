@@ -10,7 +10,7 @@ export function HeroBanner() {
   const { t, isRTL, language } = useLanguage();
 
   return (
-    <section className="relative bg-gradient-to-b from-[#FBF9F7] via-[#F5EFE6] to-[#ECE4D8] text-[#0B0B0B] overflow-hidden py-16 sm:py-24 lg:py-28 border-b border-neutral-200/80">
+    <section className="relative bg-gradient-to-b from-[#FBF9F7] via-[#F5EFE6] to-[#ECE4D8] text-[#0B0B0B] overflow-hidden py-10 sm:py-16 lg:py-24 border-b border-neutral-200/80">
       {/* Subtle Architectural Grid Lines & Ambient Lighting */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#00000008_1px,transparent_1px),linear-gradient(to_bottom,#00000008_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
       
@@ -18,20 +18,20 @@ export function HeroBanner() {
       <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-[#D9C9B3]/40 blur-[120px] rounded-full pointer-events-none" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 items-center">
           
           {/* Text Content Column */}
           <div className="lg:col-span-7 flex flex-col justify-center">
             {/* Eyebrow badge matching brand aesthetic */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#0B0B0B]/5 border border-[#0B0B0B]/10 rounded-full mb-6 self-start shadow-2xs">
-              <div className="w-2 h-2 rounded-full bg-[#0B0B0B]" />
-              <span className="text-[11px] font-bold uppercase tracking-widest text-[#0B0B0B]">
+            <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 bg-[#0B0B0B]/5 border border-[#0B0B0B]/10 rounded-full mb-4 sm:mb-6 self-start shadow-2xs">
+              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#0B0B0B]" />
+              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-[#0B0B0B]">
                 {t("hero.badge")}
               </span>
             </div>
 
             {/* Main Headline */}
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight uppercase leading-[1.08] text-[#0B0B0B]">
+            <h1 className="text-3xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight uppercase leading-[1.1] text-[#0B0B0B]">
               {t("hero.title1")} <br />
               <span className="text-[#8C7A65] italic font-serif relative inline-block">
                 {t("hero.title2")}
@@ -41,15 +41,15 @@ export function HeroBanner() {
             </h1>
 
             {/* Subtitle & Philosophy */}
-            <p className="mt-6 text-base sm:text-lg text-neutral-700 leading-relaxed max-w-xl font-normal">
+            <p className="mt-4 sm:mt-6 text-xs sm:text-base text-neutral-700 leading-relaxed max-w-xl font-normal">
               {t("hero.subtitle")}
             </p>
 
             {/* CTA Buttons */}
-            <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+            <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
               <Link
                 href="/shop"
-                className="px-8 py-4 bg-[#0B0B0B] text-white font-bold text-xs uppercase tracking-widest rounded-sm hover:bg-neutral-800 transition-all duration-300 flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
+                className="px-6 py-3.5 sm:px-8 sm:py-4 bg-[#0B0B0B] text-white font-bold text-xs uppercase tracking-widest rounded-sm hover:bg-neutral-800 transition-all duration-300 flex items-center justify-center gap-2 shadow-md hover:shadow-lg min-h-[44px]"
               >
                 <span>{t("hero.shopAll")}</span>
                 <ArrowRight className={`w-4 h-4 ${isRTL ? "rotate-180" : ""}`} />
@@ -57,14 +57,14 @@ export function HeroBanner() {
 
               <Link
                 href="/shop?category=watches"
-                className="px-8 py-4 bg-white/80 backdrop-blur-xs text-[#0B0B0B] font-bold text-xs uppercase tracking-widest rounded-sm border border-neutral-300 hover:border-black hover:bg-white transition-all duration-300 flex items-center justify-center shadow-2xs"
+                className="px-6 py-3.5 sm:px-8 sm:py-4 bg-white/80 backdrop-blur-xs text-[#0B0B0B] font-bold text-xs uppercase tracking-widest rounded-sm border border-neutral-300 hover:border-black hover:bg-white transition-all duration-300 flex items-center justify-center shadow-2xs min-h-[44px]"
               >
                 {t("hero.exploreTimepieces")}
               </Link>
             </div>
 
             {/* Key Assurance / Trust Badges */}
-            <div className="mt-12 flex flex-wrap items-center gap-6 pt-6 border-t border-neutral-300/80 text-xs text-neutral-700">
+            <div className="mt-8 sm:mt-12 flex flex-wrap items-center gap-4 sm:gap-6 pt-4 sm:pt-6 border-t border-neutral-300/80 text-[11px] sm:text-xs text-neutral-700">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-[#0B0B0B]" />
                 <span className="font-semibold">{t("hero.codBadge")}</span>

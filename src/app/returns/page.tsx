@@ -77,12 +77,18 @@ export default function ReturnsPage() {
             </p>
           </div>
 
-          <div className="pt-6 border-t border-neutral-100 flex justify-center">
+          <div className="pt-6 border-t border-neutral-100 flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               href="/contact"
-              className="px-6 py-3 bg-[#0B0B0B] text-white text-xs font-bold uppercase tracking-wider rounded-sm hover:bg-[#D9C9B3] hover:text-[#0B0B0B] transition-colors"
+              className="w-full sm:w-auto text-center px-6 py-3 bg-[#0B0B0B] text-white text-xs font-bold uppercase tracking-wider rounded-sm hover:bg-[#D9C9B3] hover:text-[#0B0B0B] transition-colors min-h-[44px] flex items-center justify-center"
             >
               {language === "ar" ? "تواصل مع خدمة العملاء لطلب استبدال" : "Contact Support for Exchange"}
+            </Link>
+            <Link
+              href="/security"
+              className="w-full sm:w-auto text-center px-6 py-3 bg-white border border-neutral-300 text-black text-xs font-bold uppercase tracking-wider rounded-sm hover:border-black transition-colors min-h-[44px] flex items-center justify-center"
+            >
+              {language === "ar" ? "سياسة حماية المشتري والأمان" : "Buyer Protection Policy"}
             </Link>
           </div>
         </div>

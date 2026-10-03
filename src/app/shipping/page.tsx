@@ -83,16 +83,16 @@ export default function ShippingPage() {
 
         {/* Governorates Table */}
         <div className="bg-white border border-neutral-200 rounded-sm overflow-hidden shadow-xs">
-          <div className="p-6 border-b border-neutral-200 flex items-center justify-between">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-[#0B0B0B]">
+          <div className="p-4 sm:p-6 border-b border-neutral-200 flex items-center justify-between">
+            <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-[#0B0B0B]">
               {language === "ar" ? "جدول تسعيرة الشحن لكل المحافظات" : "Governorate Shipping Rates"}
             </h3>
-            <span className="text-xs text-[#686B6B]">Bosta Logistics</span>
+            <span className="text-[11px] sm:text-xs text-[#686B6B]">Bosta Logistics</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3 p-4 sm:p-6">
             {EGYPTIAN_GOVERNORATES.map((g) => (
-              <div key={g.id} className="p-3.5 bg-neutral-50 border border-neutral-200 rounded-xs flex items-center justify-between text-xs">
+              <div key={g.id} className="p-3 sm:p-3.5 bg-neutral-50 border border-neutral-200 rounded-xs flex items-center justify-between text-xs">
                 <div>
                   <span className="font-bold text-[#0B0B0B] block">
                     {language === "ar" ? g.nameAr : g.nameEn}
@@ -106,6 +106,22 @@ export default function ShippingPage() {
                 </span>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Cross policy navigation footer */}
+        <div className="mt-8 p-4 sm:p-6 bg-white border border-neutral-200 rounded-sm flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          <span className="text-neutral-600 font-medium text-center sm:text-left rtl:sm:text-right">
+            {language === "ar" ? "تعرف أيضًا على حقوقك في المعاينة والاستبدال والأمان:" : "Learn more about your inspection, exchange & buyer protection rights:"}
+          </span>
+          <div className="flex items-center gap-4">
+            <Link href="/returns" className="font-bold text-[#0B0B0B] hover:text-[#8C7A65] underline">
+              {language === "ar" ? "سياسة الاستبدال (14 يوم)" : "Returns Policy"}
+            </Link>
+            <span>•</span>
+            <Link href="/security" className="font-bold text-[#0B0B0B] hover:text-[#8C7A65] underline">
+              {language === "ar" ? "حماية المشتري والأمان" : "Buyer Security"}
+            </Link>
           </div>
         </div>
 

@@ -10,6 +10,7 @@ import { formatPrice } from "@/lib/utils";
 import { EGYPTIAN_GOVERNORATES, getShippingByGovernorate } from "@/data/egypt-governorates";
 import { createOrderInDatabase } from "@/lib/database-service";
 import { validateCoupon, incrementCouponUsage } from "@/lib/coupons-store";
+import { TrustGuarantees } from "@/components/ui/TrustGuarantees";
 import { ShieldCheck, Truck, Lock, ArrowLeft, ArrowRight, Tag, CheckCircle2 } from "lucide-react";
 
 export default function CheckoutPage() {
@@ -188,11 +189,11 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="bg-[#F5F5F3] min-h-screen py-10 sm:py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="bg-[#F5F5F3] min-h-screen py-6 sm:py-10 md:py-16">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         
         {/* Navigation back */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <Link
             href="/shop"
             className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#686B6B] hover:text-[#0B0B0B]"
@@ -202,15 +203,15 @@ export default function CheckoutPage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12">
           
           {/* Left Form: Customer Details & Egyptian Address */}
-          <div className="lg:col-span-7 space-y-8">
+          <div className="lg:col-span-7 space-y-6 sm:space-y-8">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0B0B0B] uppercase tracking-tight">
+              <h1 className="text-xl sm:text-3xl font-extrabold text-[#0B0B0B] uppercase tracking-tight">
                 {t("checkout.heading")}
               </h1>
-              <p className="text-xs text-[#686B6B] mt-1 uppercase tracking-wider">
+              <p className="text-[11px] sm:text-xs text-[#686B6B] mt-1 uppercase tracking-wider">
                 {t("checkout.subheading")}
               </p>
             </div>
@@ -221,10 +222,10 @@ export default function CheckoutPage() {
               </div>
             )}
 
-            <form id="checkout-form" onSubmit={handlePlaceOrder} className="space-y-8">
+            <form id="checkout-form" onSubmit={handlePlaceOrder} className="space-y-6 sm:space-y-8">
               
               {/* 1. Customer Information */}
-              <div className="bg-white p-6 sm:p-8 rounded-sm border border-neutral-200 shadow-xs space-y-4">
+              <div className="bg-white p-4 sm:p-6 md:p-8 rounded-sm border border-neutral-200 shadow-xs space-y-4">
                 <h3 className="text-sm font-bold uppercase tracking-wider text-[#0B0B0B] pb-3 border-b border-neutral-100 flex items-center justify-between">
                   <span>{t("checkout.step1Title")}</span>
                   <span className="text-[10px] text-[#686B6B] font-mono">STEP 01</span>
@@ -240,7 +241,7 @@ export default function CheckoutPage() {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder={t("checkout.fullNamePlaceholder")}
-                    className="w-full bg-[#F5F5F3] border border-neutral-300 rounded-sm p-3 text-sm focus:outline-none focus:border-[#0B0B0B]"
+                    className="w-full bg-[#F5F5F3] border border-neutral-300 rounded-sm p-3 text-base sm:text-sm focus:outline-none focus:border-[#0B0B0B]"
                   />
                 </div>
 
@@ -255,7 +256,7 @@ export default function CheckoutPage() {
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder={t("checkout.phonePlaceholder")}
-                      className="w-full bg-[#F5F5F3] border border-neutral-300 rounded-sm p-3 text-sm focus:outline-none focus:border-[#0B0B0B]"
+                      className="w-full bg-[#F5F5F3] border border-neutral-300 rounded-sm p-3 text-base sm:text-sm focus:outline-none focus:border-[#0B0B0B]"
                     />
                     <span className="text-[10px] text-[#686B6B] mt-1 block">
                       {t("checkout.phoneNotice")}
@@ -271,7 +272,7 @@ export default function CheckoutPage() {
                       value={secondaryPhone}
                       onChange={(e) => setSecondaryPhone(e.target.value)}
                       placeholder="01XXXXXXXXX"
-                      className="w-full bg-[#F5F5F3] border border-neutral-300 rounded-sm p-3 text-sm focus:outline-none focus:border-[#0B0B0B]"
+                      className="w-full bg-[#F5F5F3] border border-neutral-300 rounded-sm p-3 text-base sm:text-sm focus:outline-none focus:border-[#0B0B0B]"
                     />
                   </div>
                 </div>
@@ -285,13 +286,13 @@ export default function CheckoutPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="ahmed@example.com"
-                    className="w-full bg-[#F5F5F3] border border-neutral-300 rounded-sm p-3 text-sm focus:outline-none focus:border-[#0B0B0B]"
+                    className="w-full bg-[#F5F5F3] border border-neutral-300 rounded-sm p-3 text-base sm:text-sm focus:outline-none focus:border-[#0B0B0B]"
                   />
                 </div>
               </div>
 
               {/* 2. Egyptian Shipping Address */}
-              <div className="bg-white p-6 sm:p-8 rounded-sm border border-neutral-200 shadow-xs space-y-4">
+              <div className="bg-white p-4 sm:p-6 md:p-8 rounded-sm border border-neutral-200 shadow-xs space-y-4">
                 <h3 className="text-sm font-bold uppercase tracking-wider text-[#0B0B0B] pb-3 border-b border-neutral-100 flex items-center justify-between">
                   <span>{t("checkout.step2Title")}</span>
                   <span className="text-[10px] text-[#686B6B] font-mono">STEP 02</span>
@@ -305,7 +306,7 @@ export default function CheckoutPage() {
                     <select
                       value={governorate}
                       onChange={(e) => setGovernorate(e.target.value)}
-                      className="w-full bg-[#F5F5F3] border border-neutral-300 rounded-sm p-3 text-sm font-medium focus:outline-none focus:border-[#0B0B0B]"
+                      className="w-full bg-[#F5F5F3] border border-neutral-300 rounded-sm p-3 text-base sm:text-sm font-medium focus:outline-none focus:border-[#0B0B0B]"
                     >
                       {EGYPTIAN_GOVERNORATES.map((g) => (
                         <option key={g.id} value={g.id}>
@@ -325,7 +326,7 @@ export default function CheckoutPage() {
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
                       placeholder={t("checkout.cityPlaceholder")}
-                      className="w-full bg-[#F5F5F3] border border-neutral-300 rounded-sm p-3 text-sm focus:outline-none focus:border-[#0B0B0B]"
+                      className="w-full bg-[#F5F5F3] border border-neutral-300 rounded-sm p-3 text-base sm:text-sm focus:outline-none focus:border-[#0B0B0B]"
                     />
                   </div>
                 </div>
@@ -340,11 +341,11 @@ export default function CheckoutPage() {
                     value={streetAddress}
                     onChange={(e) => setStreetAddress(e.target.value)}
                     placeholder={language === "ar" ? "اسم الشارع وتفاصيل العنوان" : "Street name and prominent details"}
-                    className="w-full bg-[#F5F5F3] border border-neutral-300 rounded-sm p-3 text-sm focus:outline-none focus:border-[#0B0B0B]"
+                    className="w-full bg-[#F5F5F3] border border-neutral-300 rounded-sm p-3 text-base sm:text-sm focus:outline-none focus:border-[#0B0B0B]"
                   />
                 </div>
 
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
                   <div>
                     <label className="block text-[11px] font-bold uppercase text-[#0B0B0B] mb-1">
                       {t("checkout.bldg")}
@@ -354,7 +355,7 @@ export default function CheckoutPage() {
                       value={buildingNo}
                       onChange={(e) => setBuildingNo(e.target.value)}
                       placeholder="14"
-                      className="w-full bg-[#F5F5F3] border border-neutral-300 rounded-sm p-2.5 text-xs focus:outline-none focus:border-[#0B0B0B]"
+                      className="w-full bg-[#F5F5F3] border border-neutral-300 rounded-sm p-2.5 text-base sm:text-xs focus:outline-none focus:border-[#0B0B0B]"
                     />
                   </div>
                   <div>
@@ -366,7 +367,7 @@ export default function CheckoutPage() {
                       value={floorNo}
                       onChange={(e) => setFloorNo(e.target.value)}
                       placeholder="3"
-                      className="w-full bg-[#F5F5F3] border border-neutral-300 rounded-sm p-2.5 text-xs focus:outline-none focus:border-[#0B0B0B]"
+                      className="w-full bg-[#F5F5F3] border border-neutral-300 rounded-sm p-2.5 text-base sm:text-xs focus:outline-none focus:border-[#0B0B0B]"
                     />
                   </div>
                   <div>
@@ -378,7 +379,7 @@ export default function CheckoutPage() {
                       value={apartmentNo}
                       onChange={(e) => setApartmentNo(e.target.value)}
                       placeholder="12"
-                      className="w-full bg-[#F5F5F3] border border-neutral-300 rounded-sm p-2.5 text-xs focus:outline-none focus:border-[#0B0B0B]"
+                      className="w-full bg-[#F5F5F3] border border-neutral-300 rounded-sm p-2.5 text-base sm:text-xs focus:outline-none focus:border-[#0B0B0B]"
                     />
                   </div>
                 </div>
@@ -392,30 +393,30 @@ export default function CheckoutPage() {
                     value={landmark}
                     onChange={(e) => setLandmark(e.target.value)}
                     placeholder={language === "ar" ? "مثال: بجوار صيدلية العزبي، رن الجرس" : "e.g. Next to Metro Market, Ring doorbell"}
-                    className="w-full bg-[#F5F5F3] border border-neutral-300 rounded-sm p-3 text-sm focus:outline-none focus:border-[#0B0B0B]"
+                    className="w-full bg-[#F5F5F3] border border-neutral-300 rounded-sm p-3 text-base sm:text-sm focus:outline-none focus:border-[#0B0B0B]"
                   />
                 </div>
               </div>
 
               {/* 3. Payment Method: Cash on Delivery (Strictly COD) */}
-              <div className="bg-white p-6 sm:p-8 rounded-sm border border-neutral-200 shadow-xs space-y-4">
+              <div className="bg-white p-4 sm:p-6 md:p-8 rounded-sm border border-neutral-200 shadow-xs space-y-4">
                 <h3 className="text-sm font-bold uppercase tracking-wider text-[#0B0B0B] pb-3 border-b border-neutral-100 flex items-center justify-between">
                   <span>{t("checkout.step3Title")}</span>
                   <span className="text-[10px] text-[#686B6B] font-mono">STEP 03</span>
                 </h3>
 
-                <div className="p-4 border-2 border-[#0B0B0B] bg-[#F5F5F3] rounded-sm flex items-start gap-4">
+                <div className="p-3.5 sm:p-4 border-2 border-[#0B0B0B] bg-[#F5F5F3] rounded-sm flex items-start gap-3 sm:gap-4">
                   <div className="w-5 h-5 rounded-full border-4 border-[#0B0B0B] bg-white shrink-0 mt-0.5" />
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-extrabold text-sm text-[#0B0B0B]">
+                      <span className="font-extrabold text-xs sm:text-sm text-[#0B0B0B]">
                         {t("checkout.codTitle")}
                       </span>
                       <span className="bg-[#0B0B0B] text-[#D9C9B3] text-[9px] font-bold uppercase px-2 py-0.5 rounded-xs">
                         {t("checkout.codBadge")}
                       </span>
                     </div>
-                    <p className="text-xs text-neutral-600 mt-1 leading-relaxed">
+                    <p className="text-[11px] sm:text-xs text-neutral-600 mt-1 leading-relaxed">
                       {t("checkout.codDesc")}
                     </p>
                   </div>
@@ -426,7 +427,7 @@ export default function CheckoutPage() {
 
           {/* Right Column: Order Summary & Placement */}
           <div className="lg:col-span-5">
-            <div className="bg-white p-6 sm:p-8 rounded-sm border border-neutral-200 shadow-xs sticky top-28 space-y-6">
+            <div className="bg-white p-4 sm:p-6 md:p-8 rounded-sm border border-neutral-200 shadow-xs sticky top-24 space-y-5 sm:space-y-6">
               <h3 className="text-base font-bold uppercase tracking-wider text-[#0B0B0B] pb-4 border-b border-neutral-200">
                 {t("checkout.summaryTitle")} ({items.length})
               </h3>
@@ -522,7 +523,7 @@ export default function CheckoutPage() {
                 type="submit"
                 form="checkout-form"
                 disabled={isSubmitting}
-                className="w-full py-4 px-6 bg-[#0B0B0B] text-white text-xs font-extrabold uppercase tracking-widest rounded-sm hover:bg-[#D9C9B3] hover:text-[#0B0B0B] transition-all shadow-md flex items-center justify-center gap-2"
+                className="w-full py-4 px-6 bg-[#0B0B0B] text-white text-xs font-extrabold uppercase tracking-widest rounded-sm hover:bg-[#D9C9B3] hover:text-[#0B0B0B] transition-all shadow-md flex items-center justify-center gap-2 min-h-[48px] active:scale-[0.99]"
               >
                 <Lock className="w-4 h-4" />
                 <span>
@@ -533,6 +534,11 @@ export default function CheckoutPage() {
               <div className="flex items-center justify-center gap-2 text-[11px] text-[#686B6B]">
                 <ShieldCheck className="w-3.5 h-3.5 text-[#0B0B0B]" />
                 <span>{t("checkout.safeNotice")}</span>
+              </div>
+
+              {/* High Trust Guarantees Reassurance */}
+              <div className="pt-2">
+                <TrustGuarantees variant="compact" showLink={true} />
               </div>
             </div>
           </div>
